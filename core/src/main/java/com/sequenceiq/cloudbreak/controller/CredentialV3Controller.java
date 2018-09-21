@@ -12,6 +12,7 @@ import javax.transaction.Transactional.TxType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
 
+import com.sequenceiq.cloudbreak.api.model.v3.credential.CredentialPrerequisites;
 import com.sequenceiq.cloudbreak.common.type.ResourceEvent;
 import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
@@ -90,5 +91,12 @@ public class CredentialV3Controller extends NotificationController implements Cr
     @Override
     public Class<? extends WorkspaceResourceRepository<Credential, ?>> getWorkspaceAwareResourceRepository() {
         return CredentialRepository.class;
+    }
+
+    @Override
+    public CredentialPrerequisites getPrerequisitesForCloudPlatform(Long workspaceId, String platform) {
+        User user = userService.getOrCreate(restRequestThreadLocalService.getCloudbreakUser());
+        Workspace workspace = workspaceService.get(restRequestThreadLocalService.getRequestedWorkspaceId(), user);
+        return credentialService.getPrerequisites(user, workspace, platform);
     }
 }
