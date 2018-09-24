@@ -233,6 +233,7 @@ public class ModelDescriptions {
         public static final String PROXY_NAME = "proxy configuration name for the cluster";
         public static final String PROXY_CONFIG_ID = "proxy configuration id for the cluster";
         public static final String LOCATIONS = "cloud storage locations";
+        public static final String STATUS_MAINTENANCE_MODE = "maintenance mode status";
         public static final String SECURE = "tells wether the cluster is secured or not";
     }
 

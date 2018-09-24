@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.service.cluster;
 
 import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
+import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ON;
 import static com.sequenceiq.cloudbreak.api.model.Status.REQUESTED;
 import static com.sequenceiq.cloudbreak.api.model.Status.START_REQUESTED;
 import static com.sequenceiq.cloudbreak.api.model.Status.STOP_REQUESTED;
@@ -826,6 +827,26 @@ public class ClusterService {
             });
         }
     }
+
+    public void setMaintenanceMode(Long stackId, Boolean maintenanceMode) {
+        Stack stack = stackService.getByIdWithListsInTransaction(stackId);
+        Cluster cluster = getCluster(stack);
+        if (cluster == null) {
+            throw new BadRequestException(String.format("Cluster does not exist on stack with '%s' id.", stackId));
+        }
+        if (!stack.isAvailable()) {
+            throw new BadRequestException(String.format(
+                    "Stack '%s' is currently in '%s' state. Maintenance mode can be set to a cluster if the underlying stack is 'AVAILABLE'.",
+                    stackId, stack.getStatus()));
+        }
+        if (!cluster.isAvailable()) {
+            throw new BadRequestException(String.format(
+                    "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
+                    cluster.getId(), cluster.getStatus()));
+        }
+        cluster.setStatus(maintenanceMode ? MAINTENANCE_MODE_ON : AVAILABLE);
+    }
+
 
     private void createHDPRepoComponent(StackRepoDetails stackRepoDetailsUpdate, Stack stack) {
         if (stackRepoDetailsUpdate != null) {

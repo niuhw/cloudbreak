@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import com.sequenceiq.cloudbreak.api.model.AmbariRepoDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.ConfigsRequest;
 import com.sequenceiq.cloudbreak.api.model.ConfigsResponse;
+import com.sequenceiq.cloudbreak.api.model.MaintenanceModeJson;
 import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRepairRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -109,4 +110,13 @@ public interface ClusterV1Endpoint {
     @ApiOperation(value = OperationDescriptions.GatewayOpDescription.UPDATE_GATEWAY_TOPOLOGIES, produces = ContentType.JSON, notes = Notes.GATEWAY_NOTES,
             nickname = "updateGatewayTopologies")
     GatewayJson updateGatewayTopologies(@PathParam("id") Long stackId, @NotNull UpdateGatewayTopologiesJson request);
+
+    @PUT
+    @Path("{id}/cluster/maintenance")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = ClusterOpDescription.SET_MAINTENANCE_MODE, produces = ContentType.JSON, notes = Notes.MAINTENANCE_NOTES,
+            nickname = "setClusterMaintenanceMode")
+    Response setClusterMaintenanceMode(@PathParam("id") Long stackId, @NotNull MaintenanceModeJson maintenanceMode);
+
+
 }

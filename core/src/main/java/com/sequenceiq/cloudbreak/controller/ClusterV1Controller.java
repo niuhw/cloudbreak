@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import com.sequenceiq.cloudbreak.api.endpoint.v1.ClusterV1Endpoint;
 import com.sequenceiq.cloudbreak.api.model.AmbariRepoDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.ConfigsRequest;
 import com.sequenceiq.cloudbreak.api.model.ConfigsResponse;
+import com.sequenceiq.cloudbreak.api.model.MaintenanceModeJson;
 import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRepairRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -162,5 +164,11 @@ public class ClusterV1Controller implements ClusterV1Endpoint {
     @Override
     public GatewayJson updateGatewayTopologies(Long stackId, UpdateGatewayTopologiesJson request) {
         return gatewayService.updateGatewayTopologies(stackId, request);
+    }
+
+    @Override
+    public Response setClusterMaintenanceMode(Long stackId, @NotNull MaintenanceModeJson maintenanceMode) {
+        clusterService.setMaintenanceMode(stackId, maintenanceMode.getStatus());
+        return Response.accepted().build();
     }
 }
