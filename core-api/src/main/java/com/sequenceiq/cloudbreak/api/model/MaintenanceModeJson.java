@@ -11,13 +11,13 @@ import io.swagger.annotations.ApiModelProperty;
 public class MaintenanceModeJson implements JsonEntity {
 
     @ApiModelProperty(ModelDescriptions.ClusterModelDescription.STATUS_MAINTENANCE_MODE)
-    private Boolean status;
+    private MaintenanceModeStatus status;
 
-    public Boolean getStatus() {
+    public MaintenanceModeStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(MaintenanceModeStatus status) {
         this.status = status;
     }
 }
