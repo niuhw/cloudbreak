@@ -242,6 +242,11 @@ public class ReactorFlowManager {
         notify(selector, new StackImageUpdateTriggerEvent(selector, stackId, newImageId, imageCatalogName, imageCatalogUrl));
     }
 
+    public void triggerMaintenanceModeValidationFlow(Long stackId, String newImageId, String imageCatalogName, String imageCatalogUrl) {
+        String selector = FlowChainTriggers.CLUSTER_MAINTENANCE_MODE_VALIDATION_TRIGGER_EVENT;
+        notify(selector, new StackImageUpdateTriggerEvent(selector, stackId, newImageId, imageCatalogName, imageCatalogUrl));
+    }
+
     public void cancelRunningFlows(Long stackId) {
         StackEvent cancelEvent = new StackEvent(Flow2Handler.FLOW_CANCEL, stackId);
         reactor.notify(Flow2Handler.FLOW_CANCEL, eventFactory.createEventWithErrHandler(cancelEvent));
