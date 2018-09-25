@@ -847,7 +847,6 @@ public class ClusterService {
         cluster.setStatus(maintenanceMode ? MAINTENANCE_MODE_ON : AVAILABLE);
     }
 
-
     private void createHDPRepoComponent(StackRepoDetails stackRepoDetailsUpdate, Stack stack) {
         if (stackRepoDetailsUpdate != null) {
             StackRepoDetails stackRepoDetails = clusterComponentConfigProvider.getHDPRepo(stack.getCluster().getId());

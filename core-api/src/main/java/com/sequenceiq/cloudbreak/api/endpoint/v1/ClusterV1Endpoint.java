@@ -118,5 +118,4 @@ public interface ClusterV1Endpoint {
             nickname = "setClusterMaintenanceMode")
     Response setClusterMaintenanceMode(@PathParam("id") Long stackId, @NotNull MaintenanceModeJson maintenanceMode);
 
-
 }

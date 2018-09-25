@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cedarsoftware.util.io.JsonReader;
+import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.cloud.Acceptable;
 import com.sequenceiq.cloudbreak.cloud.event.Payload;
 import com.sequenceiq.cloudbreak.core.flow2.chain.FlowChainHandler;
@@ -35,6 +36,7 @@ import com.sequenceiq.cloudbreak.core.flow2.cluster.upscale.ClusterUpscaleFlowCo
 import com.sequenceiq.cloudbreak.core.flow2.cluster.userpasswd.ClusterCredentialChangeFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.config.FlowConfiguration;
 import com.sequenceiq.cloudbreak.core.flow2.stack.downscale.StackDownscaleConfig;
+import com.sequenceiq.cloudbreak.core.flow2.stack.image.update.StackImageUpdateFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.stack.instance.termination.InstanceTerminationFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.stack.provision.StackCreationFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.stack.repair.ManualStackRepairTriggerFlowConfig;
@@ -44,12 +46,14 @@ import com.sequenceiq.cloudbreak.core.flow2.stack.sync.StackSyncFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.stack.termination.StackTerminationFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.stack.upscale.StackUpscaleConfig;
 import com.sequenceiq.cloudbreak.domain.FlowLog;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.logger.LoggerContextKey;
 import com.sequenceiq.cloudbreak.logger.MDCBuilder;
 import com.sequenceiq.cloudbreak.repository.FlowLogRepository;
 import com.sequenceiq.cloudbreak.service.TransactionService;
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionExecutionException;
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionRuntimeExecutionException;
+import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.flowlog.FlowLogService;
 
 import reactor.bus.Event;
@@ -82,6 +86,10 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
             ClusterUpgradeFlowConfig.class, ClusterResetFlowConfig.class, ChangePrimaryGatewayFlowConfig.class
     );
 
+    private static final List<Class<? extends FlowConfiguration<?>>> ALLOWED_FLOWS_IN_MAINTENANCE = Arrays.asList(
+            StackSyncFlowConfig.class, ClusterSyncFlowConfig.class, StackImageUpdateFlowConfig.class
+    );
+
     @Inject
     private FlowLogService flowLogService;
 
@@ -108,6 +116,9 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
 
     @Inject
     private TransactionService transactionService;
+
+    @Inject
+    private ClusterService clusterService;
 
     @Override
     public void accept(Event<? extends Payload> event) {
@@ -138,7 +149,11 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
                     FlowConfiguration<?> flowConfig = flowConfigurationMap.get(key);
                     if (flowConfig != null && flowConfig.getFlowTriggerCondition().isFlowTriggerable(payload.getStackId())) {
                         if (!isFlowAcceptable(key, payload)) {
-                            LOGGER.info("Flow operation not allowed, other flow is running. Stack ID {}, event {}", payload.getStackId(), key);
+                            LOGGER.warn("Flow operation not allowed, other flow is running. Stack ID {}, event {}", payload.getStackId(), key);
+                            return;
+                        }
+                        if (activeMaintenanceMode(flowConfig, payload.getStackId())) {
+                            LOGGER.warn("Flow operation not allowed, maintenance mode is active. Stack ID {}, event {}", payload.getStackId(), key);
                             return;
                         }
                         flowId = UUID.randomUUID().toString();
@@ -167,6 +182,17 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
                 }
                 break;
         }
+    }
+
+    private Boolean activeMaintenanceMode(FlowConfiguration<?> flowConfig, Long stackId) {
+        if (ALLOWED_FLOWS_IN_MAINTENANCE.contains(flowConfig.getClass())) {
+            return Boolean.FALSE;
+        }
+
+        return Optional.ofNullable(clusterService.findOneByStackId(stackId))
+                .map(Cluster::getStatus)
+                .map(Status.MAINTENANCE_MODE_ON::equals)
+                .orElse(Boolean.FALSE);
     }
 
     private boolean isFlowAcceptable(String key, Payload payload) {

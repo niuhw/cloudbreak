@@ -76,7 +76,8 @@ public class InstanceMetadataUpdater {
         Map<String, Map<String, String>> packageVersionsByNameByHost = getPackageVersionByNameByHost(gatewayConfig, hostOrchestrator);
 
         Set<InstanceMetaData> instanceMetaDataSet = stack.getNotDeletedInstanceMetaDataSet();
-        Map<String, Multimap<String, String>> changedVersionsByHost = updateInstanceMetaDataWithPackageVersions(packageVersionsByNameByHost, instanceMetaDataSet);
+        Map<String, Multimap<String, String>> changedVersionsByHost =
+                updateInstanceMetaDataWithPackageVersions(packageVersionsByNameByHost, instanceMetaDataSet);
         notifyIfPackagesHaveChangedVersions(stack, changedVersionsByHost);
 
         List<String> packagesWithMultipleVersions = collectPackagesWithMultipleVersions(instanceMetaDataSet);
