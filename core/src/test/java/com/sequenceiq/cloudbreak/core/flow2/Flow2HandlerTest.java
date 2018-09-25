@@ -11,6 +11,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.statemachine.ExtendedState;
@@ -42,6 +44,7 @@ import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.cloud.event.Payload;
 import com.sequenceiq.cloudbreak.core.flow2.chain.FlowChainHandler;
 import com.sequenceiq.cloudbreak.core.flow2.chain.FlowChains;
+import com.sequenceiq.cloudbreak.core.flow2.cluster.sync.ClusterSyncFlowConfig;
 import com.sequenceiq.cloudbreak.core.flow2.config.FlowConfiguration;
 import com.sequenceiq.cloudbreak.core.flow2.restart.DefaultRestartAction;
 import com.sequenceiq.cloudbreak.core.flow2.stack.start.StackStartFlowConfig;
@@ -165,6 +168,46 @@ public class Flow2HandlerTest {
         verify(flowLogService, times(1))
                 .save(anyString(), nullable(String.class), eq("KEY"), any(Payload.class), any(), eq(flowConfig.getClass()), eq(flowState));
         verify(flow, times(1)).sendEvent(anyString(), any());
+    }
+
+    @Test
+    public void testNewSyncFlowMaintenanceActive() {
+        ClusterSyncFlowConfig syncFlowConfig = Mockito.mock(ClusterSyncFlowConfig.class);
+        given(syncFlowConfig.getFlowTriggerCondition()).willReturn(new DefaultFlowTriggerCondition());
+
+        BDDMockito.<FlowConfiguration<?>>given(flowConfigurationMap.get(any())).willReturn(syncFlowConfig);
+        given(syncFlowConfig.createFlow(anyString(), anyLong())).willReturn(flow);
+        given(syncFlowConfig.getFlowTriggerCondition()).willReturn(flowTriggerCondition);
+        given(flowTriggerCondition.isFlowTriggerable(anyLong())).willReturn(true);
+        Cluster cluster = new Cluster();
+        cluster.setStatus(Status.MAINTENANCE_MODE_ON);
+        given(clusterService.findOneByStackId(anyLong())).willReturn(cluster);
+        given(flow.getCurrentState()).willReturn(flowState);
+        Event<Payload> event = new Event<>(payload);
+        event.setKey("KEY");
+        underTest.accept(event);
+        verify(flowConfigurationMap, times(1)).get(anyString());
+        verify(runningFlows, times(1)).put(eq(flow), isNull(String.class));
+        verify(flowLogService, times(1))
+                .save(anyString(), nullable(String.class), eq("KEY"), any(Payload.class), any(), eq(syncFlowConfig.getClass()), eq(flowState));
+        verify(flow, times(1)).sendEvent(anyString(), any());
+    }
+
+    @Test
+    public void testNewFlowMaintenanceActive() {
+        BDDMockito.<FlowConfiguration<?>>given(flowConfigurationMap.get(any())).willReturn(flowConfig);
+        given(flowConfig.createFlow(anyString(), anyLong())).willReturn(flow);
+        given(flowConfig.getFlowTriggerCondition()).willReturn(flowTriggerCondition);
+        given(flowTriggerCondition.isFlowTriggerable(anyLong())).willReturn(true);
+        Cluster cluster = new Cluster();
+        cluster.setStatus(Status.MAINTENANCE_MODE_ON);
+        given(clusterService.findOneByStackId(anyLong())).willReturn(cluster);
+        given(flow.getCurrentState()).willReturn(flowState);
+        Event<Payload> event = new Event<>(payload);
+        event.setKey("KEY");
+        underTest.accept(event);
+        verify(flowConfigurationMap, times(1)).get(anyString());
+        verify(flow, never()).sendEvent(anyString(), any());
     }
 
     @Test

@@ -185,7 +185,7 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
     }
 
     private Boolean activeMaintenanceMode(FlowConfiguration<?> flowConfig, Long stackId) {
-        if (ALLOWED_FLOWS_IN_MAINTENANCE.contains(flowConfig.getClass())) {
+        if (ALLOWED_FLOWS_IN_MAINTENANCE.stream().anyMatch(allowed -> allowed.isInstance(flowConfig))) {
             return Boolean.FALSE;
         }
 
