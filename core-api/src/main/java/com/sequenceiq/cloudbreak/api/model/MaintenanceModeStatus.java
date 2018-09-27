@@ -4,6 +4,6 @@ public enum MaintenanceModeStatus {
 
     ON,
     VALIDATION_REQUESTED,
-    OFF;
+    OFF
 
 }

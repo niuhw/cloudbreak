@@ -1,5 +1,8 @@
 package com.sequenceiq.cloudbreak.service;
 
+import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
+import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ON;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +17,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.api.model.AmbariStackDetailsJson;
+import com.sequenceiq.cloudbreak.api.model.MaintenanceModeStatus;
 import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.host.HostGroupRequest;
 import com.sequenceiq.cloudbreak.api.model.users.UserNamePasswordJson;
@@ -21,6 +25,7 @@ import com.sequenceiq.cloudbreak.blueprint.validation.BlueprintValidator;
 import com.sequenceiq.cloudbreak.cloud.model.component.StackRepoDetails;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.domain.Blueprint;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
@@ -139,5 +144,23 @@ public class ClusterCommonService {
         LOGGER.info("Cluster username password update request received. Stack id:  {}, username: {}",
                 stackId, userNamePasswordJson.getUserName());
         clusterService.updateUserNamePassword(stackId, userNamePasswordJson);
+    }
+
+    public void setMaintenanceMode(Stack stack, MaintenanceModeStatus maintenanceMode) {
+        Cluster cluster = stack.getCluster();
+        if (cluster == null) {
+            throw new BadRequestException(String.format("Cluster does not exist on stack with '%s' id.", stack.getId()));
+        }
+        if (!stack.isAvailable()) {
+            throw new BadRequestException(String.format(
+                    "Stack '%s' is currently in '%s' state. Maintenance mode can be set to a cluster if the underlying stack is 'AVAILABLE'.",
+                    stack.getId(), stack.getStatus()));
+        }
+        if (!cluster.isAvailable()) {
+            throw new BadRequestException(String.format(
+                    "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
+                    cluster.getId(), cluster.getStatus()));
+        }
+        cluster.setStatus(MaintenanceModeStatus.ON.equals(maintenanceMode) ? MAINTENANCE_MODE_ON : AVAILABLE);
     }
 }

@@ -8,6 +8,7 @@ import javax.inject.Named;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
 import org.springframework.core.convert.ConversionService;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Controller;
 
 import com.sequenceiq.cloudbreak.api.endpoint.v3.StackV3Endpoint;
 import com.sequenceiq.cloudbreak.api.model.GeneratedBlueprintResponse;
+import com.sequenceiq.cloudbreak.api.model.MaintenanceModeJson;
 import com.sequenceiq.cloudbreak.api.model.ReinstallRequestV2;
 import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.stack.StackImageChangeRequest;
@@ -170,5 +172,12 @@ public class StackV3Controller extends NotificationController implements StackV3
     @Override
     public Class<? extends WorkspaceResourceRepository<Stack, ?>> getWorkspaceAwareResourceRepository() {
         return StackRepository.class;
+    }
+
+    @Override
+    public Response setClusterMaintenanceMode(Long workspaceId, String name, @NotNull MaintenanceModeJson maintenanceMode) {
+        Stack stack = stackService.getByNameInWorkspace(name, workspaceId);
+        clusterCommonService.setMaintenanceMode(stack, maintenanceMode.getStatus());
+        return Response.accepted().build();
     }
 }

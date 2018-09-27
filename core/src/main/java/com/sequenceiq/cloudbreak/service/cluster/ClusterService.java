@@ -1,7 +1,6 @@
 package com.sequenceiq.cloudbreak.service.cluster;
 
 import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
-import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ON;
 import static com.sequenceiq.cloudbreak.api.model.Status.REQUESTED;
 import static com.sequenceiq.cloudbreak.api.model.Status.START_REQUESTED;
 import static com.sequenceiq.cloudbreak.api.model.Status.STOP_REQUESTED;
@@ -74,7 +73,6 @@ import com.sequenceiq.cloudbreak.domain.ProxyConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.StopRestrictionReason;
 import com.sequenceiq.cloudbreak.domain.json.Json;
-import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.StackStatus;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
@@ -83,6 +81,7 @@ import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostMetadata;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
+import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.json.JsonHelper;
 import com.sequenceiq.cloudbreak.repository.ClusterRepository;
 import com.sequenceiq.cloudbreak.repository.ConstraintRepository;
@@ -826,25 +825,6 @@ public class ClusterService {
                 return null;
             });
         }
-    }
-
-    public void setMaintenanceMode(Long stackId, Boolean maintenanceMode) {
-        Stack stack = stackService.getByIdWithListsInTransaction(stackId);
-        Cluster cluster = getCluster(stack);
-        if (cluster == null) {
-            throw new BadRequestException(String.format("Cluster does not exist on stack with '%s' id.", stackId));
-        }
-        if (!stack.isAvailable()) {
-            throw new BadRequestException(String.format(
-                    "Stack '%s' is currently in '%s' state. Maintenance mode can be set to a cluster if the underlying stack is 'AVAILABLE'.",
-                    stackId, stack.getStatus()));
-        }
-        if (!cluster.isAvailable()) {
-            throw new BadRequestException(String.format(
-                    "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
-                    cluster.getId(), cluster.getStatus()));
-        }
-        cluster.setStatus(maintenanceMode ? MAINTENANCE_MODE_ON : AVAILABLE);
     }
 
     private void createHDPRepoComponent(StackRepoDetails stackRepoDetailsUpdate, Stack stack) {
