@@ -2,8 +2,8 @@ package com.sequenceiq.cloudbreak.api.model;
 
 public enum MaintenanceModeStatus {
 
-    ON,
+    ENABLED,
     VALIDATION_REQUESTED,
-    OFF
+    DISABLED;
 
 }

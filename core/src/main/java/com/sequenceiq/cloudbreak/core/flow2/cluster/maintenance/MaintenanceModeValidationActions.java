@@ -2,7 +2,6 @@ package com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance;
 
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATION_FAIL_HANDLED_EVENT;
-import static com.sequenceiq.cloudbreak.core.flow2.helloworld.HelloWorldEvent.FINALIZE_HELLO_WORLD_EVENT;
 
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +15,7 @@ import com.sequenceiq.cloudbreak.cloud.event.Payload;
 import com.sequenceiq.cloudbreak.cloud.event.Selectable;
 import com.sequenceiq.cloudbreak.core.flow2.AbstractAction;
 import com.sequenceiq.cloudbreak.core.flow2.CommonContext;
+import com.sequenceiq.cloudbreak.reactor.api.event.StackEvent;
 
 @Configuration
 public class MaintenanceModeValidationActions {
@@ -27,6 +27,39 @@ public class MaintenanceModeValidationActions {
             @Override
             protected void doExecute(CommonContext context, Payload payload, Map<Object, Object> variables) {
                 sendEvent(context.getFlowId(), VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT.event(), payload);
+            }
+        };
+    }
+
+    @Bean(name = "FETCH_STACK_REPO_STATE")
+    public AbstractMaintenanceModeValidationAction<?> fetchStackRepo() {
+        return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
+
+            @Override
+            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
+
+            }
+        };
+    }
+
+    @Bean(name = "VALIDATE_STACK_REPO_INFO_STATE")
+    public AbstractMaintenanceModeValidationAction<?> validateStackRepo() {
+        return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
+
+            @Override
+            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
+
+            }
+        };
+    }
+
+    @Bean(name = "VALIDATE_AMBARI_REPO_INFO_STATE")
+    public AbstractMaintenanceModeValidationAction<?> validateAmbariRepo() {
+        return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
+
+            @Override
+            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
+
             }
         };
     }
@@ -45,7 +78,7 @@ public class MaintenanceModeValidationActions {
 
                     @Override
                     public String selector() {
-                        return FINALIZE_HELLO_WORLD_EVENT.event();
+                        return VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT.event();
                     }
 
                     @Override
@@ -68,14 +101,16 @@ public class MaintenanceModeValidationActions {
         };
     }
 
-    private abstract static class AbstractMaintenanceModeValidationAction<P extends Payload> extends AbstractAction<MaintenanceModeValidationState, MaintenanceModeValidationEvent, CommonContext, P> {
+    private abstract static class AbstractMaintenanceModeValidationAction<P extends Payload> extends
+            AbstractAction<MaintenanceModeValidationState, MaintenanceModeValidationEvent, CommonContext, P> {
 
         protected AbstractMaintenanceModeValidationAction(Class<P> payloadClass) {
             super(payloadClass);
         }
 
         @Override
-        protected CommonContext createFlowContext(String flowId, StateContext<MaintenanceModeValidationState, MaintenanceModeValidationEvent> stateContext, P payload) {
+        protected CommonContext createFlowContext(String flowId, StateContext<MaintenanceModeValidationState,
+                MaintenanceModeValidationEvent> stateContext, P payload) {
             return new CommonContext(flowId);
         }
 

@@ -11,7 +11,6 @@ import com.sequenceiq.cloudbreak.cloud.event.Selectable;
 import com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.MaintenanceModeValidationTriggerEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.StackSyncTriggerEvent;
-import com.sequenceiq.cloudbreak.core.flow2.stack.image.update.StackImageUpdateEvent;
 import com.sequenceiq.cloudbreak.core.flow2.stack.sync.StackSyncEvent;
 import com.sequenceiq.cloudbreak.reactor.api.event.StackEvent;
 
@@ -27,7 +26,8 @@ public class ClusterMaintenanceModeFlowEventChainFactory implements FlowEventCha
         Queue<Selectable> flowEventChain = new ConcurrentLinkedQueue<>();
         flowEventChain.add(new StackSyncTriggerEvent(StackSyncEvent.STACK_SYNC_EVENT.event(), event.getStackId(), true, event.accepted()));
         flowEventChain.add(new StackEvent(CLUSTER_SYNC_EVENT.event(), event.getStackId()));
-        flowEventChain.add(new MaintenanceModeValidationTriggerEvent(MaintenanceModeValidationEvent.STACK_IMAGE_UPDATE_EVENT.event(), event.getStackId(), event.getNewImageId(),
+        flowEventChain.add(new MaintenanceModeValidationTriggerEvent(MaintenanceModeValidationEvent.START_VALIDATION_EVENT.event(),
+                event.getStackId(), event.getNewImageId(),
                 event.getImageCatalogName(), event.getImageCatalogUrl()));
         return flowEventChain;
     }

@@ -24,7 +24,8 @@ import com.sequenceiq.cloudbreak.core.flow2.config.AbstractFlowConfiguration.Tra
 
 @Component
 public class MaintenanceModeValidationFlowConfig extends AbstractFlowConfiguration<MaintenanceModeValidationState, MaintenanceModeValidationEvent> {
-    private static final List<Transition<MaintenanceModeValidationState, MaintenanceModeValidationEvent>> TRANSITIONS = new Builder<MaintenanceModeValidationState, MaintenanceModeValidationEvent>()
+    private static final List<Transition<MaintenanceModeValidationState, MaintenanceModeValidationEvent>> TRANSITIONS = new
+            Builder<MaintenanceModeValidationState, MaintenanceModeValidationEvent>()
             .defaultFailureEvent(VALIDATION_SOMETHING_WENT_WRONG)
             .from(INIT_STATE).to(FETCH_STACK_REPO_STATE).event(START_VALIDATION_EVENT).noFailureEvent()
             .from(FETCH_STACK_REPO_STATE).to(VALIDATE_STACK_REPO_INFO_STATE).event(FETCH_STACK_REPO_INFO_FINISHED_EVENT).defaultFailureEvent()

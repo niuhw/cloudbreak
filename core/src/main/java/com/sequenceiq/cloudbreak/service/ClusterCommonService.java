@@ -161,6 +161,6 @@ public class ClusterCommonService {
                     "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
                     cluster.getId(), cluster.getStatus()));
         }
-        cluster.setStatus(MaintenanceModeStatus.ON.equals(maintenanceMode) ? MAINTENANCE_MODE_ON : AVAILABLE);
+        cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ON : AVAILABLE);
     }
 }

@@ -97,6 +97,7 @@ import com.sequenceiq.cloudbreak.service.TransactionService;
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionExecutionException;
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionRuntimeExecutionException;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
+import com.sequenceiq.cloudbreak.service.cluster.ambari.AmbariRepositoryVersionService;
 import com.sequenceiq.cloudbreak.service.cluster.flow.ClusterTerminationService;
 import com.sequenceiq.cloudbreak.service.events.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.service.filesystem.FileSystemConfigService;
@@ -198,6 +199,9 @@ public class ClusterService {
 
     @Inject
     private BlueprintUtils blueprintUtils;
+
+    @Inject
+    private AmbariRepositoryVersionService ambariRepositoryVersionService;
 
     public Cluster create(Stack stack, Cluster cluster, List<ClusterComponent> components, User user) throws TransactionExecutionException {
         LOGGER.info("Cluster requested [BlueprintId: {}]", cluster.getBlueprint().getId());
@@ -360,6 +364,43 @@ public class ClusterService {
             } else {
                 String errorMessage = AmbariClientExceptionUtil.getErrorMessage(e);
                 throw new CloudbreakServiceException("Could not get Cluster from Ambari as JSON: " + errorMessage, e);
+            }
+        }
+    }
+
+    public String getStackRepositoryJson(Long stackId, ComponentType type) {
+        try {
+            AmbariClient ambariClient = getAmbariClient(stackId);
+            Stack stack = stackService.getById(stackId);
+            Cluster cluster = stack.getCluster();
+            if (cluster == null) {
+                throw new BadRequestException(String.format("There is no cluster installed on stack '%s'.", stack.getName()));
+            }
+            StackRepoDetails repoDetails = clusterComponentConfigProvider.getStackRepoDetails(cluster.getId());
+            String stackRepoId = repoDetails.getStack().get(StackRepoDetails.REPO_ID_TAG);
+            String osType = ambariRepositoryVersionService.getOsTypeForStackRepoDetails(repoDetails);
+            String[] typeVersion = stackRepoId.split("-");
+            String stackType = "";
+            String stackVersion = "";
+            if (typeVersion.length != 2 || "".equals(osType)) {
+                throw new BadRequestException(String.format("There stored HDP repo details (%s) are invalid for stack '%s'.", repoDetails, stack.getName()));
+            } else {
+                stackType = typeVersion[0];
+                stackVersion = typeVersion[1];
+            }
+
+            // String stack, String stackVersion, String osType, String repoId
+            String stackRepositoryJson = ambariClient.getStackRepositoryAsJson(stackType, stackVersion, osType, stackRepoId);
+            if (stackRepositoryJson == null) {
+                throw new BadRequestException("Stack Repository response coming from Ambari server was null");
+            }
+            return stackRepositoryJson;
+        } catch (HttpResponseException e) {
+            if ("Not Found".equals(e.getMessage())) {
+                throw new NotFoundException("Ambari validation not found.", e);
+            } else {
+                String errorMessage = AmbariClientExceptionUtil.getErrorMessage(e);
+                throw new CloudbreakServiceException("Could not get Stack Repository from Ambari as JSON: " + errorMessage, e);
             }
         }
     }

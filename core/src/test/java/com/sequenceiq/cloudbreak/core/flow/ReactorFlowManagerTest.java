@@ -106,6 +106,7 @@ public class ReactorFlowManagerTest {
         underTest.triggerClusterRepairFlow(STACK_ID, new HashMap<>(), true);
         underTest.triggerEphemeralUpdate(STACK_ID);
         underTest.triggerStackImageUpdate(STACK_ID, "asdf", null, null);
+        underTest.triggerMaintenanceModeValidationFlow(STACK_ID, "asdf", null, null);
 
         // Not start from 0 because flow cancellations
         int count = 5;
