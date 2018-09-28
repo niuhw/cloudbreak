@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import com.sequenceiq.cloudbreak.api.model.GeneratedBlueprintResponse;
 import com.sequenceiq.cloudbreak.api.model.MaintenanceModeJson;
 import com.sequenceiq.cloudbreak.api.model.ReinstallRequestV2;
+import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.stack.StackImageChangeRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.StackScaleRequestV2;
@@ -200,4 +201,11 @@ public interface StackV3Endpoint {
     @ApiOperation(value = OperationDescriptions.ClusterOpDescription.SET_MAINTENANCE_MODE, produces = ContentType.JSON, notes = Notes.MAINTENANCE_NOTES,
             nickname = "setClusterMaintenanceMode")
     Response setClusterMaintenanceMode(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name, @NotNull MaintenanceModeJson maintenanceMode);
+
+    @PUT
+    @Path("{name}/cluster")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = OperationDescriptions.ClusterOpDescription.PUT_BY_STACK_ID, produces = ContentType.JSON, notes = Notes.CLUSTER_NOTES,
+            nickname = "putCluster")
+    Response put(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name, @Valid UpdateClusterJson updateJson);
 }

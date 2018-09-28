@@ -180,4 +180,12 @@ public class StackV3Controller extends NotificationController implements StackV3
         clusterCommonService.setMaintenanceMode(stack, maintenanceMode.getStatus());
         return Response.accepted().build();
     }
+
+    @Override
+    public Response put(Long workspaceId, String name, UpdateClusterJson updateJson) {
+        Stack stack = stackService.getByNameInWorkspace(name, workspaceId);
+        User user = userService.getOrCreate(restRequestThreadLocalService.getIdentityUser());
+        Workspace workspace = workspaceService.get(restRequestThreadLocalService.getRequestedWorkspaceId(), user);
+        return clusterCommonService.put(stack.getId(), updateJson, user, workspace);
+    }
 }

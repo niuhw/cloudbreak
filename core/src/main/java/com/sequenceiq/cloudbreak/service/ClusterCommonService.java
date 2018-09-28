@@ -4,6 +4,7 @@ import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
 import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ON;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -93,8 +94,25 @@ public class ClusterCommonService {
             clusterHostgroupAdjustmentChange(stackId, updateJson, stack);
             return Response.status(Status.NO_CONTENT).build();
         }
+
+        if (Objects.nonNull(updateJson.getAmbariStackDetails())) {
+            updateStackDetails(updateJson, stack);
+            return Response.status(Status.NO_CONTENT).build();
+        }
         LOGGER.error("Invalid cluster update request received. Stack id: {}", stackId);
         throw new BadRequestException("Invalid update cluster request!");
+    }
+
+    private void updateStackDetails(UpdateClusterJson updateJson, Stack stack) {
+        AmbariStackDetailsJson ambariStackDetails = updateJson.getAmbariStackDetails();
+        Long clusterId = stack.getCluster().getId();
+        if ("AMBARI".equals(ambariStackDetails.getStack())) {
+            clusterService.updateAmbariRepoDetails(clusterId, ambariStackDetails);
+        } else if ("HDP".equals(ambariStackDetails.getStack())) {
+            clusterService.updateHdpRepoDetails(clusterId, ambariStackDetails);
+        } else if ("HDF".equals(ambariStackDetails.getStack())) {
+            clusterService.updateHdfRepoDetails(clusterId, ambariStackDetails);
+        }
     }
 
     private void clusterHostgroupAdjustmentChange(Long stackId, UpdateClusterJson updateJson, Stack stack) {
