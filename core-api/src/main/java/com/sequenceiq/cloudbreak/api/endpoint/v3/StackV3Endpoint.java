@@ -206,6 +206,6 @@ public interface StackV3Endpoint {
     @Path("{name}/cluster")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = OperationDescriptions.ClusterOpDescription.PUT_BY_STACK_ID, produces = ContentType.JSON, notes = Notes.CLUSTER_NOTES,
-            nickname = "putCluster")
+            nickname = "putClusterV3")
     Response put(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name, @Valid UpdateClusterJson updateJson);
 }
