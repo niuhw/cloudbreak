@@ -179,7 +179,7 @@ public class ClusterCommonService {
                     "Stack '%s' is currently in '%s' state. Maintenance mode can be set to a cluster if the underlying stack is 'AVAILABLE'.",
                     stack.getId(), stack.getStatus()));
         }
-        if (!cluster.isAvailable()) {
+        if (!cluster.isAvailable() && !MAINTENANCE_MODE_ON.equals(cluster.getStatus())) {
             throw new BadRequestException(String.format(
                     "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
                     cluster.getId(), cluster.getStatus()));
