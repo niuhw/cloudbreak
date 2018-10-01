@@ -196,7 +196,7 @@ public interface StackV3Endpoint {
     Map<String, Object> getStatusByNameInWorkspace(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name);
 
     @PUT
-    @Path("{name}/cluster/maintenance")
+    @Path("{name}/maintenance")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = OperationDescriptions.ClusterOpDescription.SET_MAINTENANCE_MODE, produces = ContentType.JSON, notes = Notes.MAINTENANCE_NOTES,
             nickname = "setClusterMaintenanceMode")
