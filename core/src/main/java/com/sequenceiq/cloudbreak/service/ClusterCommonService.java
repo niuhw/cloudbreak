@@ -104,8 +104,13 @@ public class ClusterCommonService {
     }
 
     private void updateStackDetails(UpdateClusterJson updateJson, Stack stack) {
+        Cluster cluster = stack.getCluster();
+        if (!MAINTENANCE_MODE_ON.equals(cluster.getStatus())) {
+            return;
+        }
+
         AmbariStackDetailsJson ambariStackDetails = updateJson.getAmbariStackDetails();
-        Long clusterId = stack.getCluster().getId();
+        Long clusterId = cluster.getId();
         if ("AMBARI".equals(ambariStackDetails.getStack())) {
             clusterService.updateAmbariRepoDetails(clusterId, ambariStackDetails);
         } else if ("HDP".equals(ambariStackDetails.getStack())) {
