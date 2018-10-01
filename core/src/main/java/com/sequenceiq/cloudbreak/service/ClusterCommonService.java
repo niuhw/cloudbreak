@@ -185,5 +185,6 @@ public class ClusterCommonService {
                     cluster.getId(), cluster.getStatus()));
         }
         cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ON : AVAILABLE);
+        clusterService.save(cluster);
     }
 }
