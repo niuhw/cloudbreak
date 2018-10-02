@@ -88,7 +88,10 @@ public enum Msg {
     STACK_IMAGE_SETUP("stack.image.setup"),
     STACK_IMAGE_UPDATE_STARTED("stack.image.update.started"),
     STACK_IMAGE_UPDATE_FINISHED("stack.image.update.finished"),
-    STACK_IMAGE_UPDATE_FAILED("stack.image.update.failed");
+    STACK_IMAGE_UPDATE_FAILED("stack.image.update.failed"),
+    MAINTENANCE_MODE_VALIDATION_STARTED("maintenance.mode.validation.started"),
+    MAINTENANCE_MODE_VALIDATION_FINISHED("maintenance.mode.validation.finished"),
+    MAINTENANCE_MODE_VALIDATION_FAILED("maintenance.mode.validation.failed");
 
     private final String code;
 

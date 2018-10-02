@@ -26,9 +26,8 @@ public class ClusterMaintenanceModeFlowEventChainFactory implements FlowEventCha
         Queue<Selectable> flowEventChain = new ConcurrentLinkedQueue<>();
         flowEventChain.add(new StackSyncTriggerEvent(StackSyncEvent.STACK_SYNC_EVENT.event(), event.getStackId(), true, event.accepted()));
         flowEventChain.add(new StackEvent(CLUSTER_SYNC_EVENT.event(), event.getStackId()));
-        flowEventChain.add(new MaintenanceModeValidationTriggerEvent(MaintenanceModeValidationEvent.START_VALIDATION_EVENT.event(),
-                event.getStackId(), event.getNewImageId(),
-                event.getImageCatalogName(), event.getImageCatalogUrl()));
+        flowEventChain.add(new MaintenanceModeValidationTriggerEvent(
+                MaintenanceModeValidationEvent.START_VALIDATION_EVENT.event(), event.getStackId()));
         return flowEventChain;
     }
 }

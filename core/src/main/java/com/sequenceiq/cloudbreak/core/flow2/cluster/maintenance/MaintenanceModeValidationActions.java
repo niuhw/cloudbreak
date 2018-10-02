@@ -1,43 +1,36 @@
 package com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance;
 
+import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATE_AMBARI_REPO_INFO_FINISHED_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT;
+import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATE_STACK_REPO_INFO_FINISHED_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance.MaintenanceModeValidationEvent.VALIDATION_FAIL_HANDLED_EVENT;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 
+import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.cloud.event.Payload;
 import com.sequenceiq.cloudbreak.cloud.event.Selectable;
-import com.sequenceiq.cloudbreak.core.flow2.AbstractAction;
-import com.sequenceiq.cloudbreak.core.flow2.CommonContext;
+import com.sequenceiq.cloudbreak.core.flow2.event.MaintenanceModeValidationTriggerEvent;
+import com.sequenceiq.cloudbreak.core.flow2.stack.Msg;
+import com.sequenceiq.cloudbreak.core.flow2.stack.StackContext;
 import com.sequenceiq.cloudbreak.reactor.api.event.StackEvent;
 
 @Configuration
 public class MaintenanceModeValidationActions {
 
     @Bean(name = "FETCH_STACK_REPO_STATE")
-    public Action<?, ?> startAction() {
-        return new AbstractMaintenanceModeValidationAction<Payload>(Payload.class) {
-
-            @Override
-            protected void doExecute(CommonContext context, Payload payload, Map<Object, Object> variables) {
-                sendEvent(context.getFlowId(), VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT.event(), payload);
-            }
-        };
-    }
-
-    @Bean(name = "FETCH_STACK_REPO_STATE")
     public AbstractMaintenanceModeValidationAction<?> fetchStackRepo() {
-        return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
+        return new AbstractMaintenanceModeValidationAction<>(MaintenanceModeValidationTriggerEvent.class) {
 
             @Override
-            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
-
+            protected void doExecute(StackContext context, MaintenanceModeValidationTriggerEvent payload, Map<Object, Object> variables) {
+                getFlowMessageService().fireEventAndLog(context.getStack().getId(), Msg.MAINTENANCE_MODE_VALIDATION_STARTED, Status.UPDATE_IN_PROGRESS.name());
+                getMaintenanceModeValidationService().validateStackRepository(context.getStack().getId());
+                sendEvent(context.getFlowId(), VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT.event(), payload);
             }
         };
     }
@@ -47,7 +40,9 @@ public class MaintenanceModeValidationActions {
         return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
 
             @Override
-            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
+            protected void doExecute(StackContext context, StackEvent payload, Map<Object, Object> variables) {
+                getMaintenanceModeValidationService().validateStackRepositoryNaming(context.getStack().getCluster().getId());
+                sendEvent(context.getFlowId(), VALIDATE_STACK_REPO_INFO_FINISHED_EVENT.event(), payload);
 
             }
         };
@@ -58,8 +53,9 @@ public class MaintenanceModeValidationActions {
         return new AbstractMaintenanceModeValidationAction<>(StackEvent.class) {
 
             @Override
-            protected void doExecute(CommonContext context, StackEvent payload, Map<Object, Object> variables) throws Exception {
-
+            protected void doExecute(StackContext context, StackEvent payload, Map<Object, Object> variables) {
+                getMaintenanceModeValidationService().validateAmbariRepositoryNaming(context.getStack().getCluster().getId());
+                sendEvent(context.getFlowId(), VALIDATE_AMBARI_REPO_INFO_FINISHED_EVENT.event(), payload);
             }
         };
     }
@@ -68,12 +64,15 @@ public class MaintenanceModeValidationActions {
     public Action<?, ?> finishedAction() {
         return new AbstractMaintenanceModeValidationAction<Payload>(Payload.class) {
             @Override
-            protected void doExecute(CommonContext context, Payload payload, Map<Object, Object> variables) {
+            protected void doExecute(StackContext context, Payload payload, Map<Object, Object> variables) {
+                getMaintenanceModeValidationService().validateImageCatalogSettings(context.getStack());
+                getFlowMessageService().fireEventAndLog(context.getStack().getId(), Msg
+                        .MAINTENANCE_MODE_VALIDATION_FINISHED, Status.AVAILABLE.name());
                 sendEvent(context);
             }
 
             @Override
-            protected Selectable createRequest(CommonContext context) {
+            protected Selectable createRequest(StackContext context) {
                 return new Selectable() {
 
                     @Override
@@ -83,7 +82,7 @@ public class MaintenanceModeValidationActions {
 
                     @Override
                     public Long getStackId() {
-                        return null;
+                        return context.getStack().getId();
                     }
                 };
             }
@@ -95,28 +94,12 @@ public class MaintenanceModeValidationActions {
         return new AbstractMaintenanceModeValidationAction<Payload>(Payload.class) {
 
             @Override
-            protected void doExecute(CommonContext context, Payload payload, Map<Object, Object> variables) {
+            protected void doExecute(StackContext context, Payload payload, Map<Object, Object> variables) {
+                getFlowMessageService().fireEventAndLog(context.getStack().getId(),
+                        Msg.MAINTENANCE_MODE_VALIDATION_FAILED, Status.UPDATE_FAILED.name());
                 sendEvent(context.getFlowId(), VALIDATION_FAIL_HANDLED_EVENT.event(), payload);
             }
         };
     }
 
-    private abstract static class AbstractMaintenanceModeValidationAction<P extends Payload> extends
-            AbstractAction<MaintenanceModeValidationState, MaintenanceModeValidationEvent, CommonContext, P> {
-
-        protected AbstractMaintenanceModeValidationAction(Class<P> payloadClass) {
-            super(payloadClass);
-        }
-
-        @Override
-        protected CommonContext createFlowContext(String flowId, StateContext<MaintenanceModeValidationState,
-                MaintenanceModeValidationEvent> stateContext, P payload) {
-            return new CommonContext(flowId);
-        }
-
-        @Override
-        protected Object getFailurePayload(P payload, Optional<CommonContext> flowContext, Exception ex) {
-            return (Payload) () -> null;
-        }
-    }
 }

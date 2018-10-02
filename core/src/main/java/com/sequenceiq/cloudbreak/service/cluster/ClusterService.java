@@ -372,7 +372,7 @@ public class ClusterService {
         }
     }
 
-    public String getStackRepositoryJson(Long stackId, ComponentType type) {
+    public String getStackRepositoryJson(Long stackId) {
         try {
             AmbariClient ambariClient = getAmbariClient(stackId);
             Stack stack = stackService.getById(stackId);
@@ -1133,6 +1133,10 @@ public class ClusterService {
         } catch (JsonProcessingException ignored) {
             throw new BadRequestException(String.format("HDF repo details cannot be saved. %s", ambariStackDetails));
         }
+    }
+
+    public void triggerMaintenanceModeValidation(Stack stack) {
+        flowManager.triggerMaintenanceModeValidationFlow(stack.getId());
     }
 
     private enum Msg {
