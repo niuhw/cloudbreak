@@ -191,7 +191,7 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
 
         return Optional.ofNullable(clusterService.findOneByStackId(stackId))
                 .map(Cluster::getStatus)
-                .map(Status.MAINTENANCE_MODE_ON::equals)
+                .map(Status.MAINTENANCE_MODE_ENABLED::equals)
                 .orElse(Boolean.FALSE);
     }
 

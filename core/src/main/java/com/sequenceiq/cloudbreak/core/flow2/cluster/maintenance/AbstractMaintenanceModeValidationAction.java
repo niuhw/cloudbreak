@@ -18,7 +18,6 @@ import com.sequenceiq.cloudbreak.cloud.model.Location;
 import com.sequenceiq.cloudbreak.converter.spi.CredentialToCloudCredentialConverter;
 import com.sequenceiq.cloudbreak.converter.spi.StackToCloudStackConverter;
 import com.sequenceiq.cloudbreak.core.flow2.AbstractAction;
-import com.sequenceiq.cloudbreak.core.flow2.stack.FlowMessageService;
 import com.sequenceiq.cloudbreak.core.flow2.stack.StackContext;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.logger.MDCBuilder;
@@ -31,12 +30,6 @@ abstract class AbstractMaintenanceModeValidationAction<P extends Payload> extend
     private StackService stackService;
 
     @Inject
-    private FlowMessageService flowMessageService;
-
-    @Inject
-    private MaintenanceModeValidationService maintenanceModeValidationService;
-
-    @Inject
     private StackToCloudStackConverter cloudStackConverter;
 
     @Inject
@@ -44,14 +37,6 @@ abstract class AbstractMaintenanceModeValidationAction<P extends Payload> extend
 
     protected AbstractMaintenanceModeValidationAction(Class<P> payloadClass) {
         super(payloadClass);
-    }
-
-    protected FlowMessageService getFlowMessageService() {
-        return flowMessageService;
-    }
-
-    protected MaintenanceModeValidationService getMaintenanceModeValidationService() {
-        return maintenanceModeValidationService;
     }
 
     protected StackService getStackService() {

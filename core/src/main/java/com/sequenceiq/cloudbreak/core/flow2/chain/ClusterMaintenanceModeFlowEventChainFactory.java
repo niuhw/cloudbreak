@@ -27,7 +27,7 @@ public class ClusterMaintenanceModeFlowEventChainFactory implements FlowEventCha
         flowEventChain.add(new StackSyncTriggerEvent(StackSyncEvent.STACK_SYNC_EVENT.event(), event.getStackId(), true, event.accepted()));
         flowEventChain.add(new StackEvent(CLUSTER_SYNC_EVENT.event(), event.getStackId()));
         flowEventChain.add(new MaintenanceModeValidationTriggerEvent(
-                MaintenanceModeValidationEvent.START_VALIDATION_EVENT.event(), event.getStackId()));
+                MaintenanceModeValidationEvent.START_VALIDATION_FLOW_EVENT.event(), event.getStackId()));
         return flowEventChain;
     }
 }

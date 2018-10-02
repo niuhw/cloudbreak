@@ -180,7 +180,7 @@ public class Flow2HandlerTest {
         given(syncFlowConfig.getFlowTriggerCondition()).willReturn(flowTriggerCondition);
         given(flowTriggerCondition.isFlowTriggerable(anyLong())).willReturn(true);
         Cluster cluster = new Cluster();
-        cluster.setStatus(Status.MAINTENANCE_MODE_ON);
+        cluster.setStatus(Status.MAINTENANCE_MODE_ENABLED);
         given(clusterService.findOneByStackId(anyLong())).willReturn(cluster);
         given(flow.getCurrentState()).willReturn(flowState);
         Event<Payload> event = new Event<>(payload);
@@ -200,7 +200,7 @@ public class Flow2HandlerTest {
         given(flowConfig.getFlowTriggerCondition()).willReturn(flowTriggerCondition);
         given(flowTriggerCondition.isFlowTriggerable(anyLong())).willReturn(true);
         Cluster cluster = new Cluster();
-        cluster.setStatus(Status.MAINTENANCE_MODE_ON);
+        cluster.setStatus(Status.MAINTENANCE_MODE_ENABLED);
         given(clusterService.findOneByStackId(anyLong())).willReturn(cluster);
         given(flow.getCurrentState()).willReturn(flowState);
         Event<Payload> event = new Event<>(payload);

@@ -1,7 +1,7 @@
 package com.sequenceiq.cloudbreak.service;
 
 import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
-import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ON;
+import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ENABLED;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -105,7 +105,7 @@ public class ClusterCommonService {
 
     private void updateStackDetails(UpdateClusterJson updateJson, Stack stack) {
         Cluster cluster = stack.getCluster();
-        if (!MAINTENANCE_MODE_ON.equals(cluster.getStatus())) {
+        if (!MAINTENANCE_MODE_ENABLED.equals(cluster.getStatus())) {
             return;
         }
 
@@ -179,12 +179,12 @@ public class ClusterCommonService {
                     "Stack '%s' is currently in '%s' state. Maintenance mode can be set to a cluster if the underlying stack is 'AVAILABLE'.",
                     stack.getId(), stack.getStatus()));
         }
-        if (!cluster.isAvailable() && !MAINTENANCE_MODE_ON.equals(cluster.getStatus())) {
+        if (!cluster.isAvailable() && !MAINTENANCE_MODE_ENABLED.equals(cluster.getStatus())) {
             throw new BadRequestException(String.format(
                     "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
                     cluster.getId(), cluster.getStatus()));
         }
-        cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ON : AVAILABLE);
+        cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ENABLED : AVAILABLE);
         if (maintenanceMode.equals(MaintenanceModeStatus.VALIDATION_REQUESTED)) {
             clusterService.triggerMaintenanceModeValidation(stack);
         }
