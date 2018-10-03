@@ -177,8 +177,7 @@ public class StackV3Controller extends NotificationController implements StackV3
     @Override
     public Response setClusterMaintenanceMode(Long workspaceId, String name, @NotNull MaintenanceModeJson maintenanceMode) {
         Stack stack = stackService.getByNameInWorkspace(name, workspaceId);
-        clusterCommonService.setMaintenanceMode(stack, maintenanceMode.getStatus());
-        return Response.accepted().build();
+        return clusterCommonService.setMaintenanceMode(stack, maintenanceMode.getStatus());
     }
 
     @Override

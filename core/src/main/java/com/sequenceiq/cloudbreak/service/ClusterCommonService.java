@@ -169,7 +169,7 @@ public class ClusterCommonService {
         clusterService.updateUserNamePassword(stackId, userNamePasswordJson);
     }
 
-    public void setMaintenanceMode(Stack stack, MaintenanceModeStatus maintenanceMode) {
+    public Response setMaintenanceMode(Stack stack, MaintenanceModeStatus maintenanceMode) {
         Cluster cluster = stack.getCluster();
         if (cluster == null) {
             throw new BadRequestException(String.format("Cluster does not exist on stack with '%s' id.", stack.getId()));
@@ -185,9 +185,13 @@ public class ClusterCommonService {
                     cluster.getId(), cluster.getStatus()));
         }
         cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ENABLED : AVAILABLE);
+
+        Response status = Response.ok().build();
         if (maintenanceMode.equals(MaintenanceModeStatus.VALIDATION_REQUESTED)) {
             clusterService.triggerMaintenanceModeValidation(stack);
+            status = Response.accepted().build();
         }
         clusterService.save(cluster);
+        return status;
     }
 }
