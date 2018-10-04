@@ -34,7 +34,7 @@ public class MaintenanceModeValidationFlowConfig extends AbstractFlowConfigurati
             .from(VALIDATE_STACK_REPO_INFO_STATE).to(VALIDATE_AMBARI_REPO_INFO_STATE).event(VALIDATE_STACK_REPO_INFO_FINISHED_EVENT).defaultFailureEvent()
             .from(VALIDATE_AMBARI_REPO_INFO_STATE).to(VALIDATE_IMAGE_COMPATIBILITY_STATE).event(VALIDATE_AMBARI_REPO_INFO_FINISHED_EVENT).defaultFailureEvent()
             .from(VALIDATE_IMAGE_COMPATIBILITY_STATE).to(VALIDATION_FINISHED_STATE).event(VALIDATE_IMAGE_COMPATIBILITY_FINISHED_EVENT).defaultFailureEvent()
-            .from(VALIDATION_FINISHED_STATE).to(FINAL_STATE).event(VALIDATION_FLOW_FINISHED_EVENT).defaultFailureEvent()
+            .from(VALIDATION_FINISHED_STATE).to(FINAL_STATE).event(VALIDATION_FLOW_FINISHED_EVENT).noFailureEvent()
             .build();
 
     private static final FlowEdgeConfig<MaintenanceModeValidationState, MaintenanceModeValidationEvent> EDGE_CONFIG =

@@ -4,7 +4,7 @@ import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
 import static com.sequenceiq.cloudbreak.api.model.Status.UPDATE_FAILED;
 import static com.sequenceiq.cloudbreak.api.model.Status.UPDATE_IN_PROGRESS;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -13,17 +13,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sequenceiq.cloudbreak.api.model.DetailedStackStatus;
 import com.sequenceiq.cloudbreak.api.model.Status;
+import com.sequenceiq.cloudbreak.cloud.event.model.EventStatus;
 import com.sequenceiq.cloudbreak.cloud.model.AmbariRepo;
 import com.sequenceiq.cloudbreak.cloud.model.Image;
 import com.sequenceiq.cloudbreak.cloud.model.component.StackRepoDetails;
 import com.sequenceiq.cloudbreak.core.CloudbreakImageCatalogException;
 import com.sequenceiq.cloudbreak.core.CloudbreakImageNotFoundException;
+import com.sequenceiq.cloudbreak.core.flow2.CheckResult;
 import com.sequenceiq.cloudbreak.core.flow2.stack.FlowMessageService;
 import com.sequenceiq.cloudbreak.core.flow2.stack.Msg;
-import com.sequenceiq.cloudbreak.core.flow2.CheckResult;
 import com.sequenceiq.cloudbreak.core.flow2.stack.image.update.StackImageUpdateService;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.json.JsonHelper;
@@ -39,8 +42,6 @@ import com.sequenceiq.cloudbreak.service.image.StatedImage;
 public class MaintenanceModeValidationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MaintenanceModeValidationService.class);
-
-    private static final String BASE_URL = "baseUrl";
 
     @Inject
     private ComponentConfigProvider componentConfigProvider;
@@ -78,7 +79,8 @@ public class MaintenanceModeValidationService {
         return stackRepo;
     }
 
-    public Map<String, String> validateStackRepository(Long clusterId, String stackRepo) {
+    public List<Warning> validateStackRepository(Long clusterId, String stackRepo,
+            List<Warning> warnings) {
 
         JsonNode stackRepoJson = jsonHelper.createJsonFromString(stackRepo).path("Repositories");
         String baseUrl = stackRepoJson.path("base_url").asText();
@@ -87,62 +89,98 @@ public class MaintenanceModeValidationService {
         StackRepoDetails repoDetails = clusterComponentConfigProvider.getStackRepoDetails(clusterId);
         Map<String, String> stack = repoDetails.getStack();
         if (!stack.get(StackRepoDetails.REPO_ID_TAG).contentEquals(repoId)) {
-            // TODO
-            return null;
+            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                    String.format("Incorrect repo id! Configured '%s', but fetched '%s' from Ambari.",
+                            stack.get(StackRepoDetails.REPO_ID_TAG),
+                            repoId)));
         }
         if ((stack.get(osType) == null) || !stack.get(osType).contentEquals(baseUrl)) {
-            // TODO
-            return null;
+            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                    String.format("Incorrect OS type or URL configured, fetched '%s' and '%s' from Ambari.",
+                            osType,
+                            baseUrl)));
         }
 
-        Map<String, String> stackWarnings = new HashMap<>();
         stack.remove(StackRepoDetails.REPO_ID_TAG);
         stack.entrySet().stream().filter(element -> !element.getValue().contains(repoDetails.getHdpVersion())).
-                peek(element -> {
+                forEach(element -> {
                     LOGGER.warn("Stack repo naming validation warning! {} cannot be found in {}",
                             repoDetails.getHdpVersion(), element.getValue());
-                    stackWarnings.put(element.getKey(), element.getValue());
+                    warnings.add(new Warning(WarningType.STACK_NAMING_WARNING,
+                            String.format("Stack version: '%s' cannot be found in parameter: '%s'.",
+                                    repoDetails.getHdpVersion(),
+                                    element.getValue())));
                 });
-        return stackWarnings;
+        return warnings;
     }
 
-    public Map<String, String> validateAmbariRepository(Long clusterId) {
+    public List<Warning> validateAmbariRepository(Long clusterId, List<Warning> warnings) {
 
-        Map<String, String> ambariWarnings = new HashMap<>();
         AmbariRepo repoDetails = clusterComponentConfigProvider.getAmbariRepo(clusterId);
         String baseUrl = repoDetails.getBaseUrl();
         String version = repoDetails.getVersion();
         if (!baseUrl.contains(version)) {
             LOGGER.warn("Ambari repo naming validation warning! {} cannot be found in {}", version, baseUrl);
-            ambariWarnings.put(BASE_URL, baseUrl);
+            warnings.add(new Warning(WarningType.AMBARI_NAMING_WARNING,
+                    String.format("Ambari version: '%s' cannot be found in url '%s'.",
+                            version,
+                            baseUrl)));
         }
-        return ambariWarnings;
+        return warnings;
     }
 
-    public CheckResult validateImageCatalog(Stack stack) {
+    public List<Warning> validateImageCatalog(Stack stack, List<Warning> warnings) {
         try {
             Image image = componentConfigProvider.getImage(stack.getId());
             StatedImage statedImage = imageCatalogService.getImage(image.getImageCatalogUrl(),
                     image.getImageCatalogName(), image.getImageId());
 
-            return stackImageUpdateService.checkPackageVersions(stack, statedImage);
+            CheckResult checkResult = stackImageUpdateService.checkPackageVersions(stack, statedImage);
+            if (checkResult.getStatus().equals(EventStatus.FAILED)) {
+                warnings.add(new Warning(WarningType.IMAGE_INCOMPATIBILITY_WARNING, checkResult.getMessage()));
+            }
 
         } catch (CloudbreakImageNotFoundException | CloudbreakImageCatalogException e) {
             throw new CloudbreakServiceException("Image info could not be validated!", e);
         }
+        return warnings;
     }
 
-    public void handleValidationSuccess(long stackId) {
+    public void handleValidationSuccess(long stackId, List<Warning> warnings) {
         LOGGER.info("Maintenance mode validation flow has been finished successfully");
-        flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_FINISHED, AVAILABLE.name());
+        clusterService.updateClusterStatusByStackId(stackId, AVAILABLE);
+        stackUpdater.updateStackStatus(stackId, DetailedStackStatus.AVAILABLE, "Validation has been finished");
+
+        try {
+            if (warnings.size() > 0) {
+                String warningJson = new ObjectMapper().writeValueAsString(warnings);
+                LOGGER.warn(String.format("Found warnings: {%s}", warningJson));
+                flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_FINISHED_FOUND_WARNINGS,
+                        AVAILABLE.name(), warningJson);
+            } else {
+                flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_FINISHED_NO_WARNINGS,
+                        AVAILABLE.name());
+            }
+        } catch (JsonProcessingException e) {
+            throw new CloudbreakServiceException("Validation result could not be serialized!", e);
+        }
     }
 
     public void handleValidationFailure(long stackId, Exception error) {
         String errorDetailes = error.getMessage();
         LOGGER.warn("Error during Maintenance mode validation flow: ", error);
+        clusterService.updateClusterStatusByStackId(stackId, AVAILABLE);
+        stackUpdater.updateStackStatus(stackId, DetailedStackStatus.AVAILABLE,
+                String.format("Validation has been finished with error: %s", error));
         flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_FAILED, UPDATE_FAILED.name(),
                 errorDetailes);
+    }
 
+    protected enum WarningType {
+        AMBARI_NAMING_WARNING,
+        STACK_REPO_WARNING,
+        STACK_NAMING_WARNING,
+        IMAGE_INCOMPATIBILITY_WARNING
     }
 
 }

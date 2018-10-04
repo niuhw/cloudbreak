@@ -166,6 +166,14 @@ public class ReactorFlowManagerTest {
         verify(reactor).notify(eq(FlowChainTriggers.STACK_IMAGE_UPDATE_TRIGGER_EVENT), any(Event.class));
     }
 
+    @Test
+    public void testTriggerMaintenanceModeValidationFlow() {
+        long stackId = 1L;
+        underTest.triggerMaintenanceModeValidationFlow(stackId);
+        verify(reactor).notify(eq(FlowChainTriggers.CLUSTER_MAINTENANCE_MODE_VALIDATION_TRIGGER_EVENT), any(Event.class));
+    }
+
+
     private static class TestAcceptable implements Acceptable {
         @Override
         public Promise<Boolean> accepted() {
