@@ -394,7 +394,7 @@ public class ClusterService {
             }
 
             // String stack, String stackVersion, String osType, String repoId
-            String stackRepositoryJson = ambariClient.getStackRepositoryAsJson(stackType, stackVersion, osType, stackRepoId);
+            String stackRepositoryJson = ambariClient.getLatestStackRepositoryAsJson(cluster.getName(), osType, stackRepoId);
             if (stackRepositoryJson == null) {
                 throw new BadRequestException("Stack Repository response coming from Ambari server was null");
             }
