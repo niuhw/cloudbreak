@@ -383,14 +383,8 @@ public class ClusterService {
             StackRepoDetails repoDetails = clusterComponentConfigProvider.getStackRepoDetails(cluster.getId());
             String stackRepoId = repoDetails.getStack().get(StackRepoDetails.REPO_ID_TAG);
             String osType = ambariRepositoryVersionService.getOsTypeForStackRepoDetails(repoDetails);
-            String[] typeVersion = stackRepoId.split("-");
-            String stackType = "";
-            String stackVersion = "";
-            if (typeVersion.length != 2 || "".equals(osType)) {
+            if ("".equals(osType)) {
                 throw new BadRequestException(String.format("There stored HDP repo details (%s) are invalid for stack '%s'.", repoDetails, stack.getName()));
-            } else {
-                stackType = typeVersion[0];
-                stackVersion = typeVersion[1];
             }
 
             // String stack, String stackVersion, String osType, String repoId
