@@ -87,7 +87,11 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
     );
 
     private static final List<Class<? extends FlowConfiguration<?>>> ALLOWED_FLOWS_IN_MAINTENANCE = Arrays.asList(
-            StackSyncFlowConfig.class, ClusterSyncFlowConfig.class, StackImageUpdateFlowConfig.class
+            StackSyncFlowConfig.class,
+            ClusterSyncFlowConfig.class,
+            StackImageUpdateFlowConfig.class,
+            ClusterTerminationFlowConfig.class,
+            StackTerminationFlowConfig.class
     );
 
     @Inject
