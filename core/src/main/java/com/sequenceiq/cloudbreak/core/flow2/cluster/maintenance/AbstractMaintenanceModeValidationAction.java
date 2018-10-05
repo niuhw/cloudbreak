@@ -21,6 +21,7 @@ import com.sequenceiq.cloudbreak.core.flow2.AbstractAction;
 import com.sequenceiq.cloudbreak.core.flow2.stack.StackContext;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.logger.MDCBuilder;
+import com.sequenceiq.cloudbreak.reactor.api.event.StackFailureEvent;
 import com.sequenceiq.cloudbreak.service.stack.StackService;
 
 abstract class AbstractMaintenanceModeValidationAction<P extends Payload> extends
@@ -58,7 +59,7 @@ abstract class AbstractMaintenanceModeValidationAction<P extends Payload> extend
 
     @Override
     protected Object getFailurePayload(P payload, Optional<StackContext> flowContext, Exception ex) {
-        return (Payload) () -> null;
+        return new StackFailureEvent(payload.getStackId(), ex);
     }
 }
 

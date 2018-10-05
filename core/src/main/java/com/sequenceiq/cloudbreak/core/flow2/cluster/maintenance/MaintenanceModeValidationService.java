@@ -76,6 +76,7 @@ public class MaintenanceModeValidationService {
         if (stackRepo == null || "".equals(stackRepo)) {
             throw new CloudbreakServiceException("Stack repository info could not be validated!");
         }
+        LOGGER.info(String.format("Stack repo fetched: %s", stackRepo));
         return stackRepo;
     }
 

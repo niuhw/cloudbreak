@@ -173,7 +173,6 @@ public class ReactorFlowManagerTest {
         verify(reactor).notify(eq(FlowChainTriggers.CLUSTER_MAINTENANCE_MODE_VALIDATION_TRIGGER_EVENT), any(Event.class));
     }
 
-
     private static class TestAcceptable implements Acceptable {
         @Override
         public Promise<Boolean> accepted() {
