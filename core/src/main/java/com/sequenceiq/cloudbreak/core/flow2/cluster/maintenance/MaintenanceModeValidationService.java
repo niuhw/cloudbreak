@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.core.flow2.cluster.maintenance;
 
 import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
+import static com.sequenceiq.cloudbreak.api.model.Status.MAINTENANCE_MODE_ENABLED;
 import static com.sequenceiq.cloudbreak.api.model.Status.UPDATE_FAILED;
 import static com.sequenceiq.cloudbreak.api.model.Status.UPDATE_IN_PROGRESS;
 
@@ -149,7 +150,7 @@ public class MaintenanceModeValidationService {
 
     public void handleValidationSuccess(long stackId, List<Warning> warnings) {
         LOGGER.info("Maintenance mode validation flow has been finished successfully");
-        clusterService.updateClusterStatusByStackId(stackId, AVAILABLE);
+        clusterService.updateClusterStatusByStackId(stackId, MAINTENANCE_MODE_ENABLED);
         stackUpdater.updateStackStatus(stackId, DetailedStackStatus.AVAILABLE, "Validation has been finished");
 
         try {
@@ -170,7 +171,7 @@ public class MaintenanceModeValidationService {
     public void handleValidationFailure(long stackId, Exception error) {
         String errorDetailes = error.getMessage();
         LOGGER.warn("Error during Maintenance mode validation flow: ", error);
-        clusterService.updateClusterStatusByStackId(stackId, AVAILABLE);
+        clusterService.updateClusterStatusByStackId(stackId, MAINTENANCE_MODE_ENABLED);
         stackUpdater.updateStackStatus(stackId, DetailedStackStatus.AVAILABLE,
                 String.format("Validation has been finished with error: %s", error));
         flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_FAILED, UPDATE_FAILED.name(),

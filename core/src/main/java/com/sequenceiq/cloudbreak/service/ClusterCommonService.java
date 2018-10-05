@@ -184,10 +184,23 @@ public class ClusterCommonService {
                     "Cluster '%s' is currently in '%s' state. Maintenance mode can be set to a cluster is 'AVAILABLE'.",
                     cluster.getId(), cluster.getStatus()));
         }
-        cluster.setStatus(MaintenanceModeStatus.ENABLED.equals(maintenanceMode) ? MAINTENANCE_MODE_ENABLED : AVAILABLE);
+        switch (maintenanceMode) {
+            case ENABLED:
+                cluster.setStatus(MAINTENANCE_MODE_ENABLED);
+                break;
+            case DISABLED:
+                cluster.setStatus(AVAILABLE);
+                break;
+        }
 
         Response status = Response.ok().build();
         if (maintenanceMode.equals(MaintenanceModeStatus.VALIDATION_REQUESTED)) {
+            if (!MAINTENANCE_MODE_ENABLED.equals(cluster.getStatus())) {
+                throw new BadRequestException(String.format(
+                        "Maintenance mode is not enabled for cluster '%s' (status:'%s'), it should be enabled before validation.",
+                        cluster.getId(),
+                        cluster.getStatus()));
+            }
             clusterService.triggerMaintenanceModeValidation(stack);
             status = Response.accepted().build();
         }
