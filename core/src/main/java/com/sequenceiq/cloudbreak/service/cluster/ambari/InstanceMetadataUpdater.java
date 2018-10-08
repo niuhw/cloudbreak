@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceMetadataType;
@@ -106,7 +106,7 @@ public class InstanceMetadataUpdater {
             if (!CollectionUtils.isEmpty(packageVersionsOnHost)) {
                 Image image = im.getImage().get(Image.class);
                 if (!image.getPackageVersions().equals(packageVersionsOnHost)) {
-                    Multimap<String, String> pkgVersionsMMap = LinkedListMultimap.create();
+                    Multimap<String, String> pkgVersionsMMap = LinkedHashMultimap.create();
                     pkgVersionsMMap.putAll(Multimaps.forMap(packageVersionsOnHost));
                     pkgVersionsMMap.putAll(Multimaps.forMap(image.getPackageVersions()));
                     changedVersionsByHost.put(im.getDiscoveryFQDN(), pkgVersionsMMap);

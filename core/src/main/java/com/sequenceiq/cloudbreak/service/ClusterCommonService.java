@@ -191,6 +191,10 @@ public class ClusterCommonService {
             case DISABLED:
                 cluster.setStatus(AVAILABLE);
                 break;
+            default:
+                // Nothing to do here
+                break;
+
         }
 
         Response status = Response.ok().build();
