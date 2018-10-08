@@ -20,7 +20,4 @@ import com.sequenceiq.cloudbreak.repository.workspace.WorkspaceResourceRepositor
 public interface EnvironmentResourceRepository<T extends EnvironmentAwareResource, ID extends Serializable> extends WorkspaceResourceRepository<T, ID> {
     @CheckPermissionsByWorkspace(action = READ, workspaceIndex = 0)
     Set<T> findAllByWorkspaceIdAndEnvironments_Id(Long workspaceId, Long environmentId);
-
-    @CheckPermissionsByWorkspace(action = READ, workspaceIndex = 0)
-    Set<T> findAllByEnvironments_Id(Long environmentId);
 }

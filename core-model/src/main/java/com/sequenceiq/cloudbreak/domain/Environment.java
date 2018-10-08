@@ -43,9 +43,17 @@ public class Environment implements ProvisionEntity, WorkspaceAwareResource {
     @ManyToOne
     private Credential credential;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name = "env_ldap", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "ldap_id"))
     private Set<LdapConfig> ldapConfigs;
+
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "env_proxy", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "proxy_id"))
+    private Set<ProxyConfig> proxyConfigs;
+
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "env_rds", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "rds_id"))
+    private Set<RDSConfig> rdsConfigs;
 
     @Override
     public Long getId() {
@@ -92,12 +100,36 @@ public class Environment implements ProvisionEntity, WorkspaceAwareResource {
         this.owner = owner;
     }
 
+    public Credential getCredential() {
+        return credential;
+    }
+
+    public void setCredential(Credential credential) {
+        this.credential = credential;
+    }
+
     public Set<LdapConfig> getLdapConfigs() {
         return ldapConfigs;
     }
 
     public void setLdapConfigs(Set<LdapConfig> ldapConfigs) {
         this.ldapConfigs = ldapConfigs;
+    }
+
+    public Set<ProxyConfig> getProxyConfigs() {
+        return proxyConfigs;
+    }
+
+    public void setProxyConfigs(Set<ProxyConfig> proxyConfigs) {
+        this.proxyConfigs = proxyConfigs;
+    }
+
+    public Set<RDSConfig> getRdsConfigs() {
+        return rdsConfigs;
+    }
+
+    public void setRdsConfigs(Set<RDSConfig> rdsConfigs) {
+        this.rdsConfigs = rdsConfigs;
     }
 
     @Override
