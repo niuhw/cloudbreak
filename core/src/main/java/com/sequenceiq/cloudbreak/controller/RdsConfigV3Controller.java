@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.stereotype.Controller;
 
@@ -67,6 +68,16 @@ public class RdsConfigV3Controller extends AbstractRdsConfigController implement
         User user = userService.getOrCreate(restRequestThreadLocalService.getCloudbreakUser());
         Workspace workspace = getRdsConfigService().getWorkspaceService().get(workspaceId, user);
         return testRdsConnection(rdsTestRequest, workspace);
+    }
+
+    @Override
+    public RDSConfigResponse attachToEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
+    }
+
+    @Override
+    public RDSConfigResponse detachFromEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
     }
 
     @Override

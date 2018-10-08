@@ -1,5 +1,7 @@
 package com.sequenceiq.cloudbreak.api.model.proxy;
 
+import java.util.Set;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -48,6 +50,9 @@ public abstract class ProxyConfigBase implements JsonEntity {
     @ApiModelProperty(ProxyConfigModelDescription.USERNAME)
     private String userName;
 
+    @ApiModelProperty(ModelDescriptions.ENVIRONMENTS)
+    private Set<String> environments;
+
     public String getName() {
         return name;
     }
@@ -94,5 +99,13 @@ public abstract class ProxyConfigBase implements JsonEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Set<String> getEnvironments() {
+        return environments;
+    }
+
+    public void setEnvironments(Set<String> environments) {
+        this.environments = environments;
     }
 }

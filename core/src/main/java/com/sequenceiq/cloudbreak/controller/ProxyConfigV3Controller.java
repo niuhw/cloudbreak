@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
@@ -67,6 +68,16 @@ public class ProxyConfigV3Controller extends NotificationController implements P
         ProxyConfig deleted = proxyConfigService.deleteByNameFromWorkspace(name, workspaceId);
         notify(ResourceEvent.PROXY_CONFIG_DELETED);
         return conversionService.convert(deleted, ProxyConfigResponse.class);
+    }
+
+    @Override
+    public ProxyConfigResponse attachToEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
+    }
+
+    @Override
+    public ProxyConfigResponse detachFromEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
     }
 
     @Override

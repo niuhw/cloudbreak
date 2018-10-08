@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
@@ -104,6 +105,16 @@ public class LdapV3Controller extends NotificationController implements LdapConf
     public LdapConfigRequest getRequestFromName(Long workspaceId, String name) {
         LdapConfig ldapConfig = ldapConfigService.getByNameForWorkspaceId(name, workspaceId);
         return conversionService.convert(ldapConfig, LdapConfigRequest.class);
+    }
+
+    @Override
+    public LdapConfigResponse attachToEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
+    }
+
+    @Override
+    public LdapConfigResponse detachFromEnvironments(@NotEmpty Set<String> environmentNames) {
+        return null;
     }
 
     @Override

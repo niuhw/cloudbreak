@@ -1,5 +1,7 @@
 package com.sequenceiq.cloudbreak.api.model.ldap;
 
+import java.util.Set;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -71,6 +73,9 @@ public abstract class LdapConfigBase implements JsonEntity {
 
     @ApiModelProperty(LdapConfigModelDescription.ADMIN_GROUP)
     private String adminGroup;
+
+    @ApiModelProperty(ModelDescriptions.ENVIRONMENTS)
+    private Set<String> environments;
 
     public String getDescription() {
         return description;
@@ -198,5 +203,13 @@ public abstract class LdapConfigBase implements JsonEntity {
 
     public void setUserDnPattern(String userDnPattern) {
         this.userDnPattern = userDnPattern;
+    }
+
+    public Set<String> getEnvironments() {
+        return environments;
+    }
+
+    public void setEnvironments(Set<String> environments) {
+        this.environments = environments;
     }
 }

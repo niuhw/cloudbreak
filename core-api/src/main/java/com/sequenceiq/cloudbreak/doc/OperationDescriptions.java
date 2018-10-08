@@ -444,4 +444,13 @@ public class OperationDescriptions {
     public static class KnoxServicesOpDescription {
         public static final String LIST_IN_WORKSPACE_FOR_BLUEPRINT = "list supported exposable services for the specified blueprint";
     }
+
+    public static class EnvironmentOpDescription {
+
+        public static final String CREATE = "Create an environment.";
+        public static final String GET = "Get an environment.";
+        public static final String ATTACH_RESOURCES = "Attach resources to an environment.";
+        public static final String DETACH_RESOURCES = "Detach resources from an environment.";
+        public static final String LIST = "List all environments in the workspace.";
+    }
 }

@@ -3,10 +3,12 @@ package com.sequenceiq.cloudbreak.api.endpoint.v3;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -69,4 +71,16 @@ public interface LdapConfigV3Endpoint {
     @ApiOperation(value = LdapConfigOpDescription.GET_REQUEST, produces = ContentType.JSON, notes = Notes.LDAP_CONFIG_NOTES,
             nickname = "getLdapRequestByNameAndWorkspaceId")
     LdapConfigRequest getRequestFromName(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name);
+
+    @PUT
+    @Path("{name}/attach")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    LdapConfigResponse attachToEnvironments(@NotEmpty Set<String> environmentNames);
+
+    @PUT
+    @Path("{name}/detach")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    LdapConfigResponse detachFromEnvironments(@NotEmpty Set<String> environmentNames);
 }

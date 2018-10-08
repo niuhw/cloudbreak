@@ -3,15 +3,18 @@ package com.sequenceiq.cloudbreak.api.endpoint.v3;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.sequenceiq.cloudbreak.api.model.ldap.LdapConfigResponse;
 import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigResponse;
 import com.sequenceiq.cloudbreak.api.model.rds.RDSTestRequest;
@@ -71,4 +74,15 @@ public interface RdsConfigV3Endpoint {
             nickname = "testRdsConnectionInWorkspace")
     RdsTestResult testRdsConnection(@PathParam("workspaceId") Long workspaceId, @Valid RDSTestRequest rdsTestRequest);
 
+    @PUT
+    @Path("{name}/attach")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    RDSConfigResponse attachToEnvironments(@NotEmpty Set<String> environmentNames);
+
+    @PUT
+    @Path("{name}/detach")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    RDSConfigResponse detachFromEnvironments(@NotEmpty Set<String> environmentNames);
 }
