@@ -30,6 +30,10 @@ public enum Status {
                 DELETE_COMPLETED, STOPPED, START_FAILED, STOP_FAILED).contains(valueOf(name()));
     }
 
+    public boolean isAvailable() {
+        return Arrays.asList(AVAILABLE, MAINTENANCE_MODE_ENABLED).contains(valueOf(name()));
+    }
+
     public boolean isStopPhaseActive() {
         return name().contains("STOP");
     }

@@ -124,7 +124,7 @@ public class InstanceMetadataUpdater {
             cloudbreakEventService.fireCloudbreakEvent(stack.getId(), UPDATE_REQUESTED.name(),
                     cloudbreakMessagesService.getMessage(Msg.PACKAGE_VERSIONS_ARE_CHANGED.code(),
                             Collections.singletonList(changedVersionsByHost.entrySet().stream()
-                                    .map(entry -> String.format("On Instance ID: [%s], package versions were changed: [%s]",
+                                    .map(entry -> String.format("On Instance ID: [%s], package versions have been changed: [%s]",
                                             entry.getKey(), entry.getValue().toString()))
                                     .collect(Collectors.joining("\r\n")))));
         }
