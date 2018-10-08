@@ -96,21 +96,31 @@ public class MaintenanceModeValidationService {
                             stack.get(StackRepoDetails.REPO_ID_TAG),
                             repoId)));
         }
-        if ((stack.get(osType) == null) || !stack.get(osType).contentEquals(baseUrl)) {
+        String configuredBaseUrl = stack.get(osType);
+        if (configuredBaseUrl == null) {
             warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
-                    String.format("Incorrect OS type or URL configured, fetched '%s' and '%s' from Ambari.",
-                            osType,
+                    String.format("Incorrect OS type configured, fetched '%s' from Ambari.",
+                            osType)));
+        } else if (!configuredBaseUrl.contentEquals(baseUrl)) {
+            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                    String.format("Incorrect repo URL. '%s' configured but '%s' fetched from Ambari.",
+                            configuredBaseUrl,
                             baseUrl)));
         }
 
         stack.remove(StackRepoDetails.REPO_ID_TAG);
-        stack.entrySet().stream().filter(element -> !element.getValue().contains(repoDetails.getHdpVersion())).
+
+        String hdpVersion = repoDetails.getHdpVersion();
+        if (hdpVersion == null || "".equals(hdpVersion)) {
+            throw new CloudbreakServiceException("HDP version is null in database, validation aborted!");
+        }
+        stack.entrySet().stream().filter(element -> !element.getValue().contains(hdpVersion)).
                 forEach(element -> {
                     LOGGER.warn("Stack repo naming validation warning! {} cannot be found in {}",
-                            repoDetails.getHdpVersion(), element.getValue());
+                            hdpVersion, element.getValue());
                     warnings.add(new Warning(WarningType.STACK_NAMING_WARNING,
                             String.format("Stack version: '%s' cannot be found in parameter: '%s'.",
-                                    repoDetails.getHdpVersion(),
+                                    hdpVersion,
                                     element.getValue())));
                 });
         return warnings;

@@ -387,10 +387,10 @@ public class ClusterService {
                 throw new BadRequestException(String.format("There stored HDP repo details (%s) are invalid for stack '%s'.", repoDetails, stack.getName()));
             }
 
-            // String stack, String stackVersion, String osType, String repoId
             String stackRepositoryJson = ambariClient.getLatestStackRepositoryAsJson(cluster.getName(), osType, stackRepoId);
             if (stackRepositoryJson == null) {
-                throw new BadRequestException("Stack Repository response coming from Ambari server was null");
+                throw new BadRequestException(String.format("Stack Repository response coming from Ambari server was null "
+                        + "for cluster '%s' and repo url '%s'.", cluster.getName(), stackRepoId));
             }
             return stackRepositoryJson;
         } catch (HttpResponseException e) {
