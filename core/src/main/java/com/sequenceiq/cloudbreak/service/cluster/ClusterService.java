@@ -1069,7 +1069,7 @@ public class ClusterService {
     public void updateAmbariRepoDetails(Long clusterId, AmbariStackDetailsJson ambariStackDetails) {
         if (Objects.isNull(ambariStackDetails.getVersion())
                 || Objects.isNull(ambariStackDetails.getStackBaseURL())) {
-            throw new BadRequestException(String.format("Ambari repo details not complete. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("Ambari repo details not complete."));
         }
 
         AmbariRepo ambariRepo = clusterComponentConfigProvider.getAmbariRepo(clusterId);
@@ -1084,7 +1084,7 @@ public class ClusterService {
             component.setAttributes(new Json(ambariRepo));
             clusterComponentConfigProvider.store(component);
         } catch (JsonProcessingException ignored) {
-            throw new BadRequestException(String.format("Ambari repo details cannot be saved. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("Ambari repo details cannot be saved."));
         }
     }
 
@@ -1117,13 +1117,13 @@ public class ClusterService {
             component.setAttributes(new Json(hdpRepo));
             clusterComponentConfigProvider.store(component);
         } catch (JsonProcessingException ignored) {
-            throw new BadRequestException(String.format("HDP repo details cannot be saved. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("HDP repo details cannot be saved."));
         }
     }
 
     private void checkMandatoryHdpFields(AmbariStackDetailsJson ambariStackDetails) {
         if (anyHdpHdfCommonFieldNull(ambariStackDetails)) {
-            throw new BadRequestException(String.format("HDP repo details not complete. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("HDP repo details not complete."));
         }
     }
 
@@ -1143,7 +1143,7 @@ public class ClusterService {
         if (Objects.isNull(ambariStackDetails.getVersion())
                 || Objects.isNull(ambariStackDetails.getVersionDefinitionFileUrl())
                 || Objects.isNull(ambariStackDetails.getMpackUrl())) {
-            throw new BadRequestException(String.format("HDF repo details not complete. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("HDF repo details not complete."));
         }
 
         StackRepoDetails hdfRepo = clusterComponentConfigProvider.getStackRepoDetails(clusterId);
@@ -1180,7 +1180,7 @@ public class ClusterService {
             component.setAttributes(new Json(hdfRepo));
             clusterComponentConfigProvider.store(component);
         } catch (JsonProcessingException ignored) {
-            throw new BadRequestException(String.format("HDF repo details cannot be saved. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("HDF repo details cannot be saved."));
         }
     }
 
@@ -1188,7 +1188,7 @@ public class ClusterService {
         if (anyHdpHdfCommonFieldNull(ambariStackDetails)
                 || Objects.isNull(ambariStackDetails.getMpackUrl())
                 || (Objects.isNull(ambariStackDetails.getMpacks()) && StringUtils.isEmpty(ambariStackDetails.getMpacks().get(0).getName()))) {
-            throw new BadRequestException(String.format("HDF repo details not complete. %s", ambariStackDetails));
+            throw new BadRequestException(String.format("HDF repo details not complete."));
         }
     }
 
