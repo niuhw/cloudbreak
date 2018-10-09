@@ -96,17 +96,22 @@ public class ClusterCommonService {
         }
 
         if (Objects.nonNull(updateJson.getAmbariStackDetails())) {
-            updateStackDetails(updateJson, stack);
-            return Response.status(Status.NO_CONTENT).build();
+            Boolean updateResult = updateStackDetails(updateJson, stack);
+            if (updateResult) {
+                return Response.status(Status.NO_CONTENT).build();
+            } else {
+                return Response.status(Status.BAD_REQUEST.getStatusCode(), String.format(
+                        "Repo update is only permitted in maintenance mode, current status is: '%s'", stack.getCluster().getStatus())).build();
+            }
         }
         LOGGER.error("Invalid cluster update request received. Stack id: {}", stackId);
         throw new BadRequestException("Invalid update cluster request!");
     }
 
-    private void updateStackDetails(UpdateClusterJson updateJson, Stack stack) {
+    private boolean updateStackDetails(UpdateClusterJson updateJson, Stack stack) {
         Cluster cluster = stack.getCluster();
-        if (!MAINTENANCE_MODE_ENABLED.equals(cluster.getStatus())) {
-            return;
+        if (!cluster.isMaintenanceModeEnabled()) {
+            return false;
         }
 
         AmbariStackDetailsJson ambariStackDetails = updateJson.getAmbariStackDetails();
@@ -118,6 +123,7 @@ public class ClusterCommonService {
         } else if ("HDF".equals(ambariStackDetails.getStack())) {
             clusterService.updateHdfRepoDetails(clusterId, ambariStackDetails);
         }
+        return true;
     }
 
     private void clusterHostgroupAdjustmentChange(Long stackId, UpdateClusterJson updateJson, Stack stack) {

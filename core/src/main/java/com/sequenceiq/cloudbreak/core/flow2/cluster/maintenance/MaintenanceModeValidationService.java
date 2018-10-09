@@ -147,11 +147,12 @@ public class MaintenanceModeValidationService {
             StatedImage statedImage = imageCatalogService.getImage(image.getImageCatalogUrl(),
                     image.getImageCatalogName(), image.getImageId());
 
-            CheckResult checkResult = stackImageUpdateService.checkPackageVersions(stack, statedImage);
-            if (checkResult.getStatus().equals(EventStatus.FAILED)) {
-                warnings.add(new Warning(WarningType.IMAGE_INCOMPATIBILITY_WARNING, checkResult.getMessage()));
+            if (image.getPackageVersions().size() > 0) {
+                CheckResult checkResult = stackImageUpdateService.checkPackageVersions(stack, statedImage);
+                if (checkResult.getStatus().equals(EventStatus.FAILED)) {
+                    warnings.add(new Warning(WarningType.IMAGE_INCOMPATIBILITY_WARNING, checkResult.getMessage()));
+                }
             }
-
         } catch (CloudbreakImageNotFoundException | CloudbreakImageCatalogException e) {
             throw new CloudbreakServiceException("Image info could not be validated!", e);
         }
