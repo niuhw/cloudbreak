@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,12 +19,15 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import com.sequenceiq.cloudbreak.authorization.WorkspaceResource;
+import com.sequenceiq.cloudbreak.domain.json.Json;
+import com.sequenceiq.cloudbreak.domain.json.JsonStringSetUtils;
+import com.sequenceiq.cloudbreak.domain.json.JsonToString;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
 import com.sequenceiq.cloudbreak.domain.workspace.WorkspaceAwareResource;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspace_id", "name"}))
-public class Environment implements ProvisionEntity, WorkspaceAwareResource {
+public class Environment implements WorkspaceAwareResource {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "environment_generator")
     @SequenceGenerator(name = "environment_generator", sequenceName = "environment_id_seq", allocationSize = 1)
@@ -36,23 +40,30 @@ public class Environment implements ProvisionEntity, WorkspaceAwareResource {
     private String description;
 
     @ManyToOne
+    @JoinColumn(nullable = false)
     private Workspace workspace;
 
-    private String owner;
-
     @ManyToOne
+    @JoinColumn(nullable = false)
     private Credential credential;
 
+    @Column(nullable = false)
+    private String cloudPlatform;
+
+    @Convert(converter = JsonToString.class)
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private Json regions;
+
     @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(name = "env_ldap", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "ldap_id"))
+    @JoinTable(name = "env_ldap", joinColumns = @JoinColumn(name = "envid"), inverseJoinColumns = @JoinColumn(name = "ldapid"))
     private Set<LdapConfig> ldapConfigs;
 
     @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(name = "env_proxy", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "proxy_id"))
+    @JoinTable(name = "env_proxy", joinColumns = @JoinColumn(name = "envid"), inverseJoinColumns = @JoinColumn(name = "proxyid"))
     private Set<ProxyConfig> proxyConfigs;
 
     @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(name = "env_rds", joinColumns = @JoinColumn(name = "env_id"), inverseJoinColumns = @JoinColumn(name = "rds_id"))
+    @JoinTable(name = "env_rds", joinColumns = @JoinColumn(name = "envid"), inverseJoinColumns = @JoinColumn(name = "rdsid"))
     private Set<RDSConfig> rdsConfigs;
 
     @Override
@@ -91,21 +102,28 @@ public class Environment implements ProvisionEntity, WorkspaceAwareResource {
         this.workspace = workspace;
     }
 
-    @Override
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
     public Credential getCredential() {
         return credential;
     }
 
     public void setCredential(Credential credential) {
         this.credential = credential;
+    }
+
+    public Json getRegions() {
+        return regions;
+    }
+
+    public void setRegions(Json regions) {
+        this.regions = regions;
+    }
+
+    public Set<String> getRegionsSet() {
+        return JsonStringSetUtils.jsonToStringSet(regions);
+    }
+
+    public void setRegionsSet(Set<String> regions) {
+        this.regions = JsonStringSetUtils.stringSetToJson(regions);
     }
 
     public Set<LdapConfig> getLdapConfigs() {
@@ -135,5 +153,10 @@ public class Environment implements ProvisionEntity, WorkspaceAwareResource {
     @Override
     public WorkspaceResource getResource() {
         return WorkspaceResource.ENVIRONMENT;
+    }
+
+    @Override
+    public String getOwner() {
+        return null;
     }
 }

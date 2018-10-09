@@ -2,11 +2,13 @@
 -- Migration SQL that makes the change goes here.
 
 CREATE TABLE IF NOT EXISTS environment (
-    id bigint NOT NULL,
+    id bigserial NOT NULL,
     name character varying(255) NOT NULL,
     description text,
-    credential_id bigint,
-    workspace_id bigint,
+    cloudplatform character varying(255) NOT NULL,
+    credential_id bigint NOT NULL,
+    workspace_id bigint NOT NULL,
+    regions TEXT NOT NULL,
     owner character varying(255)
 );
 
@@ -16,73 +18,78 @@ ALTER TABLE ONLY environment
 ALTER TABLE ONLY environment
     ADD CONSTRAINT uk_environment_workspace_name UNIQUE (workspace_id, name);
 
-CREATE SEQUENCE IF NOT EXISTS  environment_id_seq START WITH 1
-                                                  INCREMENT BY 1
-                                                  NO MINVALUE
-                                                  NO MAXVALUE
-                                                  CACHE 1;
+CREATE INDEX IF NOT EXISTS idx_environment_workspace_id_name ON environment (workspace_id, name);
 
 CREATE TABLE IF NOT EXISTS env_ldap (
-    env_id bigint NOT NULL,
-    ldap_id bigint NOT NULL
+    envid bigint NOT NULL,
+    ldapid bigint NOT NULL
 );
 
-ALTER TABLE ONLY env_ldap ADD CONSTRAINT fk_env_ldap_env_id FOREIGN KEY (env_id) REFERENCES environment(id);
+ALTER TABLE ONLY env_ldap ADD CONSTRAINT fk_env_ldap_envid FOREIGN KEY (envid) REFERENCES environment(id);
 
-ALTER TABLE ONLY env_ldap ADD CONSTRAINT fk_env_ldap_ldap_id FOREIGN KEY (ldap_id) REFERENCES ldapconfig(id);
+ALTER TABLE ONLY env_ldap ADD CONSTRAINT fk_env_ldap_ldapid FOREIGN KEY (ldapid) REFERENCES ldapconfig(id);
 
-CREATE INDEX IF NOT EXISTS idx_env_ldap_env_id ON env_ldap (env_id);
+ALTER TABLE ONLY env_ldap ADD CONSTRAINT uk_env_ldap_envid_ldapid UNIQUE (envid, ldapid);
 
-CREATE INDEX IF NOT EXISTS idx_env_ldap_ldap_id ON env_ldap (ldap_id);
+CREATE INDEX IF NOT EXISTS idx_env_ldap_envid ON env_ldap (envid);
+
+CREATE INDEX IF NOT EXISTS idx_env_ldap_ldapid ON env_ldap (ldapid);
 
 CREATE TABLE IF NOT EXISTS env_proxy (
-    env_id bigint NOT NULL,
-    proxy_id bigint NOT NULL
+    envid bigint NOT NULL,
+    proxyid bigint NOT NULL
 );
 
-ALTER TABLE ONLY env_proxy ADD CONSTRAINT fk_env_proxy_env_id FOREIGN KEY (env_id) REFERENCES environment(id);
+ALTER TABLE ONLY env_proxy ADD CONSTRAINT fk_env_proxy_envid FOREIGN KEY (envid) REFERENCES environment(id);
 
-ALTER TABLE ONLY env_proxy ADD CONSTRAINT fk_env_proxy_proxy_id FOREIGN KEY (proxy_id) REFERENCES proxyconfig(id);
+ALTER TABLE ONLY env_proxy ADD CONSTRAINT fk_env_proxy_proxyid FOREIGN KEY (proxyid) REFERENCES proxyconfig(id);
 
-CREATE INDEX IF NOT EXISTS idx_env_proxy_env_id ON env_proxy (env_id);
+ALTER TABLE ONLY env_proxy ADD CONSTRAINT uk_env_proxy_envid_proxyid UNIQUE (envid, proxyid);
 
-CREATE INDEX IF NOT EXISTS idx_env_proxy_proxy_id ON env_proxy (proxy_id);
+CREATE INDEX IF NOT EXISTS idx_env_proxy_envid ON env_proxy (envid);
+
+CREATE INDEX IF NOT EXISTS idx_env_proxy_proxyid ON env_proxy (proxyid);
 
 CREATE TABLE IF NOT EXISTS env_rds (
-    env_id bigint NOT NULL,
-    rds_id bigint NOT NULL
+    envid bigint NOT NULL,
+    rdsid bigint NOT NULL
 );
 
-ALTER TABLE ONLY env_rds ADD CONSTRAINT fk_env_rds_env_id FOREIGN KEY (env_id) REFERENCES environment(id);
+ALTER TABLE ONLY env_rds ADD CONSTRAINT fk_env_rds_envid FOREIGN KEY (envid) REFERENCES environment(id);
 
-ALTER TABLE ONLY env_rds ADD CONSTRAINT fk_env_rds_rds_id FOREIGN KEY (rds_id) REFERENCES rdsconfig(id);
+ALTER TABLE ONLY env_rds ADD CONSTRAINT fk_env_rds_rdsid FOREIGN KEY (rdsid) REFERENCES rdsconfig(id);
 
-CREATE INDEX IF NOT EXISTS idx_env_rds_env_id ON env_rds (env_id);
+ALTER TABLE ONLY env_rds ADD CONSTRAINT uk_env_rds_envid_rdsid UNIQUE (envid, rdsid);
 
-CREATE INDEX IF NOT EXISTS idx_env_rds_rds_id ON env_rds (rds_id);
+CREATE INDEX IF NOT EXISTS idx_env_rds_envid ON env_rds (envid);
+
+CREATE INDEX IF NOT EXISTS idx_env_rds_rdsid ON env_rds (rdsid);
 
 -- //@UNDO
 -- SQL to undo the change goes here.
 
-DROP INDEX IF EXISTS idx_env_rds_rds_id;
-DROP INDEX IF EXISTS idx_env_rds_env_id;
-ALTER TABLE ONLY env_rds DROP CONSTRAINT IF EXISTS fk_env_rds_rds_id;
-ALTER TABLE ONLY env_rds DROP CONSTRAINT IF EXISTS fk_env_rds_env_id;
+DROP INDEX IF EXISTS idx_env_rds_rdsid;
+DROP INDEX IF EXISTS idx_env_rds_envid;
+ALTER TABLE ONLY env_rds DROP CONSTRAINT IF EXISTS uk_env_rds_envid_rdsid;
+ALTER TABLE ONLY env_rds DROP CONSTRAINT IF EXISTS fk_env_rds_rdsid;
+ALTER TABLE ONLY env_rds DROP CONSTRAINT IF EXISTS fk_env_rds_envid;
 DROP TABLE IF EXISTS env_rds;
 
-DROP INDEX IF EXISTS idx_env_proxy_proxy_id;
-DROP INDEX IF EXISTS idx_env_proxy_env_id;
-ALTER TABLE ONLY env_proxy DROP CONSTRAINT IF EXISTS fk_env_proxy_proxy_id;
-ALTER TABLE ONLY env_proxy DROP CONSTRAINT IF EXISTS fk_env_proxy_env_id;
+DROP INDEX IF EXISTS idx_env_proxy_proxyid;
+DROP INDEX IF EXISTS idx_env_proxy_envid;
+ALTER TABLE ONLY env_proxy DROP CONSTRAINT IF EXISTS uk_env_proxy_envid_proxyid;
+ALTER TABLE ONLY env_proxy DROP CONSTRAINT IF EXISTS fk_env_proxy_proxyid;
+ALTER TABLE ONLY env_proxy DROP CONSTRAINT IF EXISTS fk_env_proxy_envid;
 DROP TABLE IF EXISTS env_proxy;
 
-DROP INDEX IF EXISTS idx_env_ldap_ldap_id;
-DROP INDEX IF EXISTS idx_env_ldap_env_id;
-ALTER TABLE ONLY env_ldap DROP CONSTRAINT IF EXISTS fk_env_ldap_ldap_id;
-ALTER TABLE ONLY env_ldap DROP CONSTRAINT IF EXISTS fk_env_ldap_env_id;
+DROP INDEX IF EXISTS idx_env_ldap_ldapid;
+DROP INDEX IF EXISTS idx_env_ldap_envid;
+ALTER TABLE ONLY env_ldap DROP CONSTRAINT IF EXISTS uk_env_ldap_envid_ldapid;
+ALTER TABLE ONLY env_ldap DROP CONSTRAINT IF EXISTS fk_env_ldap_ldapid;
+ALTER TABLE ONLY env_ldap DROP CONSTRAINT IF EXISTS fk_env_ldap_envid;
 DROP TABLE IF EXISTS env_ldap;
 
-DROP SEQUENCE IF EXISTS environment_id_seq;
+DROP INDEX IF EXISTS idx_environment_workspace_id_name;
 ALTER TABLE ONLY environment DROP CONSTRAINT IF EXISTS uk_environment_workspace_name;
 ALTER TABLE ONLY environment DROP CONSTRAINT IF EXISTS environment_pkey;
 DROP TABLE IF EXISTS environment;

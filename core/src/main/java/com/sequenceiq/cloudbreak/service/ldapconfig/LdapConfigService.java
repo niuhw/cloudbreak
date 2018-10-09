@@ -77,9 +77,9 @@ public class LdapConfigService extends AbstractWorkspaceAwareResourceService<Lda
     @Override
     protected void prepareCreation(LdapConfig resource) {
         // !!!! Just for tests !!!!
-        Set<Environment> envs = environmentRepository.findAllByWorkspaceId(1l);
-        Set<LdapConfig> ldaps = ldapConfigRepository.findAllByWorkspaceIdAndEnvironments_Id(1l, 1l);
-        Set<LdapConfig> ldaps2 = ldapConfigRepository.findAllByWorkspaceIdAndEnvironments_Id(1l, 2l);
+        Set<Environment> envs = environmentRepository.findAllByWorkspaceId(1L);
+        Set<LdapConfig> ldaps = ldapConfigRepository.findAllByWorkspaceIdAndEnvironments_Id(1L, 1L);
+        Set<LdapConfig> ldaps2 = ldapConfigRepository.findAllByWorkspaceIdAndEnvironments_Id(1L, 2L);
         Set<EnvironmentView> envviews = envs.stream().map(env -> {
             EnvironmentView envView = new EnvironmentView();
             envView.setWorkspace(env.getWorkspace());
