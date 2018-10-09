@@ -50,6 +50,7 @@ import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.RecoveryMode;
 import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.api.model.StatusRequest;
+import com.sequenceiq.cloudbreak.api.model.mpack.ManagementPackDetails;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.host.HostGroupAdjustmentJson;
@@ -1095,15 +1096,15 @@ public class ClusterService {
 
         Map<String, String> stack = Optional.ofNullable(hdpRepo.getStack()).orElseGet(HashMap::new);
         stack.put(REPO_ID_TAG, ambariStackDetails.getStackRepoId());
-        stack.put(ambariStackDetails.getOs(), ambariStackDetails.getStackBaseURL());
+        stack.put(ambariStackDetails.getOsType(), ambariStackDetails.getStackBaseURL());
         stack.put(REPOSITORY_VERSION, ambariStackDetails.getRepositoryVersion());
-        stack.put(VDF_REPO_KEY_PREFIX + ambariStackDetails.getOs(), ambariStackDetails.getVersionDefinitionFileUrl());
+        stack.put(VDF_REPO_KEY_PREFIX + ambariStackDetails.getOsType(), ambariStackDetails.getVersionDefinitionFileUrl());
         stack.put(CUSTOM_VDF_REPO_KEY, ambariStackDetails.getVersionDefinitionFileUrl());
         hdpRepo.setStack(stack);
 
         Map<String, String> util = Optional.ofNullable(hdpRepo.getUtil()).orElseGet(HashMap::new);
         util.put(REPO_ID_TAG, ambariStackDetails.getUtilsRepoId());
-        util.put(ambariStackDetails.getOs(), ambariStackDetails.getUtilsBaseURL());
+        util.put(ambariStackDetails.getOsType(), ambariStackDetails.getUtilsBaseURL());
         hdpRepo.setUtil(util);
 
         hdpRepo.setEnableGplRepo(ambariStackDetails.isEnableGplRepo());
@@ -1129,7 +1130,7 @@ public class ClusterService {
 
     private boolean anyHdpHdfCommonFieldNull(AmbariStackDetailsJson ambariStackDetails) {
         return Objects.isNull(ambariStackDetails.getStackRepoId())
-                || Objects.isNull(ambariStackDetails.getOs())
+                || Objects.isNull(ambariStackDetails.getOsType())
                 || Objects.isNull(ambariStackDetails.getStackBaseURL())
                 || Objects.isNull(ambariStackDetails.getRepositoryVersion())
                 || Objects.isNull(ambariStackDetails.getVersionDefinitionFileUrl())
@@ -1140,7 +1141,7 @@ public class ClusterService {
     }
 
     public void updateHdfRepoDetails(Long clusterId, AmbariStackDetailsJson ambariStackDetails) {
-        if (Objects.isNull(ambariStackDetails.getVersion())
+        if (anyHdpHdfCommonFieldNull(ambariStackDetails)
                 || Objects.isNull(ambariStackDetails.getVersionDefinitionFileUrl())
                 || Objects.isNull(ambariStackDetails.getMpackUrl())) {
             throw new BadRequestException(String.format("HDF repo details not complete."));
@@ -1150,15 +1151,15 @@ public class ClusterService {
 
         Map<String, String> stack = Optional.ofNullable(hdfRepo.getStack()).orElseGet(HashMap::new);
         stack.put(REPO_ID_TAG, ambariStackDetails.getStackRepoId());
-        stack.put(ambariStackDetails.getOs(), ambariStackDetails.getStackBaseURL());
+        stack.put(ambariStackDetails.getOsType(), ambariStackDetails.getStackBaseURL());
         stack.put(REPOSITORY_VERSION, ambariStackDetails.getRepositoryVersion());
-        stack.put(VDF_REPO_KEY_PREFIX + ambariStackDetails.getOs(), ambariStackDetails.getVersionDefinitionFileUrl());
+        stack.put(VDF_REPO_KEY_PREFIX + ambariStackDetails.getOsType(), ambariStackDetails.getVersionDefinitionFileUrl());
         stack.put(CUSTOM_VDF_REPO_KEY, ambariStackDetails.getVersionDefinitionFileUrl());
         hdfRepo.setStack(stack);
 
         Map<String, String> util = Optional.ofNullable(hdfRepo.getUtil()).orElseGet(HashMap::new);
         util.put(REPO_ID_TAG, ambariStackDetails.getUtilsRepoId());
-        util.put(ambariStackDetails.getOs(), ambariStackDetails.getUtilsBaseURL());
+        util.put(ambariStackDetails.getOsType(), ambariStackDetails.getUtilsBaseURL());
         hdfRepo.setUtil(util);
 
         hdfRepo.setEnableGplRepo(ambariStackDetails.isEnableGplRepo());
@@ -1166,13 +1167,14 @@ public class ClusterService {
         hdfRepo.setHdpVersion(ambariStackDetails.getVersion());
 
         ManagementPackComponent managementPackComponent = new ManagementPackComponent();
-        managementPackComponent.setName(ambariStackDetails.getMpacks().iterator().next().getName());
+        ManagementPackDetails managementPackDetails = ambariStackDetails.getMpacks().iterator().next();
+        managementPackComponent.setName(managementPackDetails.getName());
         managementPackComponent.setMpackUrl(ambariStackDetails.getMpackUrl());
         managementPackComponent.setPurge(false);
         managementPackComponent.setPurgeList(List.of());
         managementPackComponent.setForce(false);
         managementPackComponent.setStackDefault(true);
-        managementPackComponent.setPreInstalled(false);
+        managementPackComponent.setPreInstalled(managementPackDetails.getPreInstalled());
         hdfRepo.setMpacks(List.of(managementPackComponent));
 
         ClusterComponent component = clusterComponentConfigProvider.getComponent(clusterId, ComponentType.HDP_REPO_DETAILS);

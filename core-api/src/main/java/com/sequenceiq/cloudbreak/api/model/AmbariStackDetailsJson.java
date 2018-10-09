@@ -28,6 +28,9 @@ public class AmbariStackDetailsJson implements JsonEntity {
     @ApiModelProperty(AmbariStackDetailsDescription.OS)
     private String os;
 
+    @ApiModelProperty(AmbariStackDetailsDescription.OS_TYPE)
+    private String osType;
+
     @ApiModelProperty(AmbariStackDetailsDescription.STACK_REPO_ID)
     private String stackRepoId;
 
@@ -83,6 +86,14 @@ public class AmbariStackDetailsJson implements JsonEntity {
 
     public void setOs(String os) {
         this.os = os;
+    }
+
+    public String getOsType() {
+        return osType;
+    }
+
+    public void setOsType(String osType) {
+        this.osType = osType;
     }
 
     public String getStackRepoId() {
