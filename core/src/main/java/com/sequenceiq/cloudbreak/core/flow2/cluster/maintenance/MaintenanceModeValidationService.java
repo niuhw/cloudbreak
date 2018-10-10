@@ -7,6 +7,7 @@ import static com.sequenceiq.cloudbreak.api.model.Status.UPDATE_IN_PROGRESS;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -74,8 +75,12 @@ public class MaintenanceModeValidationService {
         flowMessageService.fireEventAndLog(stackId, Msg.MAINTENANCE_MODE_VALIDATION_STARTED, Status.UPDATE_IN_PROGRESS.name());
 
         String stackRepo = clusterService.getStackRepositoryJson(stackId);
-        if (stackRepo == null || "".equals(stackRepo)) {
-            throw new CloudbreakServiceException("Stack repository info could not be validated!");
+        if (stackRepo == null) {
+            LOGGER.info("Stack repository info cannot be fetched due missing OS type.");
+            return null;
+        }
+        if ("".equals(stackRepo)) {
+            throw new CloudbreakServiceException("Stack repository info cannot be validated!");
         }
         LOGGER.info(String.format("Stack repo fetched: %s", stackRepo));
         return stackRepo;
@@ -84,32 +89,34 @@ public class MaintenanceModeValidationService {
     public List<Warning> validateStackRepository(Long clusterId, String stackRepo,
             List<Warning> warnings) {
 
-        JsonNode stackRepoJson = jsonHelper.createJsonFromString(stackRepo).path("Repositories");
-        String baseUrl = stackRepoJson.path("base_url").asText();
-        String osType = stackRepoJson.path("os_type").asText();
-        String repoId = stackRepoJson.path("repo_id").asText();
         StackRepoDetails repoDetails = clusterComponentConfigProvider.getStackRepoDetails(clusterId);
         Map<String, String> stack = repoDetails.getStack();
-        if (!stack.get(StackRepoDetails.REPO_ID_TAG).contentEquals(repoId)) {
-            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
-                    String.format("Incorrect repo id! Configured '%s', but fetched '%s' from Ambari.",
-                            stack.get(StackRepoDetails.REPO_ID_TAG),
-                            repoId)));
-        }
-        String configuredBaseUrl = stack.get(osType);
-        if (configuredBaseUrl == null) {
-            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
-                    String.format("Incorrect OS type configured, fetched '%s' from Ambari.",
-                            osType)));
-        } else if (!configuredBaseUrl.contentEquals(baseUrl)) {
-            warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
-                    String.format("Incorrect repo URL. '%s' configured but '%s' fetched from Ambari.",
-                            configuredBaseUrl,
-                            baseUrl)));
+        if (Objects.nonNull(stackRepo)) {
+            JsonNode stackRepoJson = jsonHelper.createJsonFromString(stackRepo).path("Repositories");
+            String baseUrl = stackRepoJson.path("base_url").asText();
+            String osType = stackRepoJson.path("os_type").asText();
+            String repoId = stackRepoJson.path("repo_id").asText();
+
+            if (!stack.get(StackRepoDetails.REPO_ID_TAG).contentEquals(repoId)) {
+                warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                        String.format("Incorrect repo id! Configured '%s', but fetched '%s' from Ambari.",
+                                stack.get(StackRepoDetails.REPO_ID_TAG),
+                                repoId)));
+            }
+            String configuredBaseUrl = stack.get(osType);
+            if (configuredBaseUrl == null) {
+                warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                        String.format("Incorrect OS type configured, fetched '%s' from Ambari.",
+                                osType)));
+            } else if (!configuredBaseUrl.contentEquals(baseUrl)) {
+                warnings.add(new Warning(WarningType.STACK_REPO_WARNING,
+                        String.format("Incorrect repo URL. '%s' configured but '%s' fetched from Ambari.",
+                                configuredBaseUrl,
+                                baseUrl)));
+            }
         }
 
         stack.remove(StackRepoDetails.REPO_ID_TAG);
-
         String hdpVersion = repoDetails.getHdpVersion();
         if (hdpVersion == null || "".equals(hdpVersion)) {
             throw new CloudbreakServiceException("HDP version is null in database, validation aborted!");

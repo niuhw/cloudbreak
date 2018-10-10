@@ -105,7 +105,7 @@ public class AmbariRepositoryVersionService {
         String [] unwantedKeys = {StackRepoDetails.REPO_ID_TAG, StackRepoDetails.MPACK_TAG};
         Set<String> keys = stackRepo.keySet();
         keys.removeAll(Arrays.asList(unwantedKeys));
-        return (keys.size() == 1) ? keys.iterator().next() : "";
+        return (keys.size() > 0) ? keys.iterator().next() : "";
     }
 
     private StackRepoDetails getStackRepoDetails(long clusterId, Orchestrator orchestrator) throws CloudbreakException {

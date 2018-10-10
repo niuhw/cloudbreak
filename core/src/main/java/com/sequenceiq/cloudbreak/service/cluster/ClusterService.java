@@ -388,7 +388,8 @@ public class ClusterService {
             String stackRepoId = repoDetails.getStack().get(StackRepoDetails.REPO_ID_TAG);
             String osType = ambariRepositoryVersionService.getOsTypeForStackRepoDetails(repoDetails);
             if ("".equals(osType)) {
-                throw new BadRequestException(String.format("There stored HDP repo details (%s) are invalid for stack '%s'.", repoDetails, stack.getName()));
+                LOGGER.info(String.format("The stored HDP repo details (%s) do not contain OS information for stack '%s'.", repoDetails, stack.getName()));
+                return null;
             }
 
             String stackRepositoryJson = ambariClient.getLatestStackRepositoryAsJson(cluster.getName(), osType, stackRepoId);
