@@ -3,7 +3,7 @@ package com.sequenceiq.cloudbreak.api.model.environment.request;
 import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.sequenceiq.cloudbreak.api.model.CredentialRequest;
@@ -13,10 +13,12 @@ import com.sequenceiq.cloudbreak.doc.ModelDescriptions.EnvironmentRequestModelDe
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("Environment")
+@ApiModel
 public class EnvironmentRequest extends EnvironmentBaseRequest {
 
-    @NotNull
+    @Size(max = 100, min = 5, message = "The length of the environments's name has to be in range of 5 to 100")
+    @Pattern(regexp = "(^[a-z][-a-z0-9]*[a-z0-9]$)",
+            message = "The environments's name can only contain lowercase alphanumeric characters and hyphens and has start with an alphanumeric character")
     @ApiModelProperty(value = ModelDescriptions.NAME, required = true)
     private String name;
 
@@ -33,6 +35,9 @@ public class EnvironmentRequest extends EnvironmentBaseRequest {
     @NotEmpty
     @ApiModelProperty(EnvironmentRequestModelDescription.REGIONS)
     private Set<String> regions;
+
+    @ApiModelProperty(EnvironmentRequestModelDescription.CLOUD_PLATFORM)
+    private String cloudPlatform;
 
     public String getName() {
         return name;
@@ -72,5 +77,13 @@ public class EnvironmentRequest extends EnvironmentBaseRequest {
 
     public void setRegions(Set<String> regions) {
         this.regions = regions;
+    }
+
+    public String getCloudPlatform() {
+        return cloudPlatform;
+    }
+
+    public void setCloudPlatform(String cloudPlatform) {
+        this.cloudPlatform = cloudPlatform;
     }
 }

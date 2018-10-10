@@ -583,12 +583,14 @@ public class ModelDescriptions {
     }
 
     public static class EnvironmentRequestModelDescription {
-        public static final String CREDENTIAL_NAME = "Name of the credential of the environment. If the name is given, the detailed credential is ignored in the request.";
+        public static final String CREDENTIAL_NAME = "Name of the credential of the environment. If the name is given, "
+                + "the detailed credential is ignored in the request.";
         public static final String CREDENTIAL = "If credentialName is not specified, the credential is used to create the new credential for the environment.";
         public static final String PROXY_CONFIGS = "Name of the proxy configurations to be attached to the environment.";
         public static final String RDS_CONFIGS = "Name of the RDS configurations to be attached to the environment.";
         public static final String LDAP_CONFIGS = "Name of the LDAP configurations to be attached to the environment.";
         public static final String REGIONS = "Regions of the environment.";
+        public static final String CLOUD_PLATFORM = "Cloud platform on the environment.";
     }
 
     public static class EnvironmentResponseModelDescription {
@@ -601,5 +603,6 @@ public class ModelDescriptions {
         public static final String RDS_CONFIGS = "RDS configurations in the environment.";
         public static final String LDAP_CONFIGS = "LDAP configurations in the environment.";
         public static final String REGIONS = "Regions of the environment.";
+        public static final String CLOUD_PLATFORM = "Cloud platform on the environment.";
     }
 }

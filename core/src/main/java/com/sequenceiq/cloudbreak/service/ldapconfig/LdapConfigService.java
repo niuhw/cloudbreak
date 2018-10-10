@@ -19,13 +19,13 @@ import com.sequenceiq.cloudbreak.domain.LdapConfig;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.domain.view.EnvironmentView;
 import com.sequenceiq.cloudbreak.repository.EnvironmentRepository;
+import com.sequenceiq.cloudbreak.repository.EnvironmentResourceRepository;
 import com.sequenceiq.cloudbreak.repository.LdapConfigRepository;
-import com.sequenceiq.cloudbreak.repository.workspace.WorkspaceResourceRepository;
-import com.sequenceiq.cloudbreak.service.AbstractWorkspaceAwareResourceService;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
+import com.sequenceiq.cloudbreak.service.environment.AbstractEnvironmentAwareService;
 
 @Service
-public class LdapConfigService extends AbstractWorkspaceAwareResourceService<LdapConfig> {
+public class LdapConfigService extends AbstractEnvironmentAwareService<LdapConfig> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapConfigService.class);
 
@@ -47,7 +47,7 @@ public class LdapConfigService extends AbstractWorkspaceAwareResourceService<Lda
     }
 
     @Override
-    public WorkspaceResourceRepository<LdapConfig, Long> repository() {
+    public EnvironmentResourceRepository<LdapConfig, Long> repository() {
         return ldapConfigRepository;
     }
 

@@ -64,6 +64,4 @@ public interface EnvironmentV3Endpoint {
             nickname = "detachResources")
     SimpleEnvironmentResponse detachResources(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String environmentName,
             @Valid EnvironmentDetachRequest request);
-
-
 }

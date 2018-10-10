@@ -11,7 +11,7 @@ import com.sequenceiq.cloudbreak.doc.ModelDescriptions.EnvironmentResponseModelD
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("Environment")
+@ApiModel
 public class DetailedEnvironmentResponse extends EnvironmentBaseResponse {
 
     @ApiModelProperty(EnvironmentResponseModelDescription.CREDENTIAL)

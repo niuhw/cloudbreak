@@ -159,4 +159,12 @@ public class Environment implements WorkspaceAwareResource {
     public String getOwner() {
         return null;
     }
+
+    public String getCloudPlatform() {
+        return cloudPlatform;
+    }
+
+    public void setCloudPlatform(String cloudPlatform) {
+        this.cloudPlatform = cloudPlatform;
+    }
 }

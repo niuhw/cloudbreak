@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.api.model.environment.request;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions.EnvironmentRequestModelDescription;
@@ -7,17 +8,17 @@ import com.sequenceiq.cloudbreak.doc.ModelDescriptions.EnvironmentRequestModelDe
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("Environment")
+@ApiModel
 public abstract class EnvironmentBaseRequest {
 
     @ApiModelProperty(EnvironmentRequestModelDescription.PROXY_CONFIGS)
-    private Set<String> proxyConfigs;
+    private Set<String> proxyConfigs = new HashSet<>();
 
     @ApiModelProperty(EnvironmentRequestModelDescription.LDAP_CONFIGS)
-    private Set<String> ldapConfigs;
+    private Set<String> ldapConfigs = new HashSet<>();
 
     @ApiModelProperty(EnvironmentRequestModelDescription.RDS_CONFIGS)
-    private Set<String> rdsConfigs;
+    private Set<String> rdsConfigs = new HashSet<>();
 
     public Set<String> getProxyConfigs() {
         return proxyConfigs;
